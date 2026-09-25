@@ -1,0 +1,555 @@
+<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width,initial-scale=1'>
+<title>SolGuardian report &middot; samples</title>
+<style>
+:root{--bg:#0b0f14;--panel:#121821;--ink:#e6edf3;--dim:#8b98a5;--crit:#ff5c5c;--high:#ff9f45;
+--med:#ffd166;--low:#7bd88f;--info:#6cb6ff;--line:#232c38}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);
+font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif}
+header{padding:28px 32px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#0e141c,#0b0f14)}
+h1{margin:0 0 6px;font-size:22px;letter-spacing:.3px}h1 span{color:var(--info)}
+.sub{color:var(--dim);font-size:13px}main{padding:24px 32px;max-width:1180px;margin:0 auto}
+.kpis{display:flex;flex-wrap:wrap;gap:12px;margin:18px 0 26px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 18px;min-width:150px}
+.kpi b{display:block;font-size:26px;line-height:1.1}.kpi small{color:var(--dim)}
+table{width:100%;border-collapse:collapse;margin:10px 0 28px;font-size:14px}
+th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{color:var(--dim);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em}
+.badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:700;
+text-transform:capitalize;border:1px solid}
+.critical{color:var(--crit);border-color:var(--crit)}.high{color:var(--high);border-color:var(--high)}
+.medium{color:var(--med);border-color:var(--med)}.low{color:var(--low);border-color:var(--low)}
+.info{color:var(--info);border-color:var(--info)}
+details{background:var(--panel);border:1px solid var(--line);border-radius:12px;margin:0 0 12px;padding:0 16px}
+summary{cursor:pointer;padding:14px 0;font-weight:600;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.loc{color:var(--dim);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px}
+pre{background:#0a0e13;border:1px solid var(--line);border-radius:8px;padding:12px;overflow:auto;font-size:12.5px}
+ol li,ul li{margin:3px 0}.note{color:var(--dim);font-size:13px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}@media(max-width:900px){.grid{grid-template-columns:1fr}}
+footer{padding:22px 32px;border-top:1px solid var(--line);color:var(--dim);font-size:12.5px}
+a{color:var(--info)}
+</style></head><body>
+<header><h1>Sol<span>Guardian</span> &mdash; exploit hunt report</h1><div class='sub'>target <code>samples</code> &middot; 5 file(s) &middot; 935 lines &middot; 13 detectors &middot; 1.45s &middot; static heuristics, offline</div></header>
+<main>
+<div class='kpis'>
+<div class='kpi'><b>49</b><small>findings</small></div>
+<div class='kpi'><b class='critical'>16</b><small>critical</small></div>
+<div class='kpi'><b class='high'>18</b><small>high</small></div>
+<div class='kpi'><b class='medium'>12</b><small>medium</small></div>
+<div class='kpi'><b class='low'>3</b><small>low</small></div>
+<div class='kpi'><b>100%</b><small>seeded recall (17/17)</small></div>
+</div>
+<h3>Ground truth</h3><table><tr><th>seeded issue</th><th>caught</th><th>rule</th><th>detector</th><th>severity</th></tr>
+<tr><td><code>evm-reentrancy-withdraw</code></td><td>yes</td><td>CEI-001</td><td>evm_reentrancy</td><td>critical / critical</td></tr>
+<tr><td><code>evm-access-adminDrain</code></td><td>yes</td><td>AC-001</td><td>evm_access</td><td>critical / critical</td></tr>
+<tr><td><code>evm-tx-origin-setOperator</code></td><td>yes</td><td>AC-002</td><td>evm_access</td><td>high / high</td></tr>
+<tr><td><code>evm-unchecked-call-refundPending</code></td><td>yes</td><td>EC-001</td><td>evm_external_calls</td><td>high / high</td></tr>
+<tr><td><code>evm-spot-price-assetValue</code></td><td>yes</td><td>OR-001</td><td>evm_oracle</td><td>critical / critical</td></tr>
+<tr><td><code>hyperevm-delegatecall-migrate</code></td><td>yes</td><td>DC-001</td><td>evm_delegatecall</td><td>critical / critical</td></tr>
+<tr><td><code>hyperevm-sig-replay-claimTreasuryGrant</code></td><td>yes</td><td>SR-002</td><td>evm_sig_replay</td><td>critical / critical</td></tr>
+<tr><td><code>hyperevm-selfdestruct-decommission</code></td><td>yes</td><td>SD-001</td><td>evm_selfdestruct</td><td>critical / critical</td></tr>
+<tr><td><code>hyperevm-stuck-funds-recoverTokens</code></td><td>yes</td><td>SF-001</td><td>evm_selfdestruct</td><td>high / high</td></tr>
+<tr><td><code>hyperevm-unguarded-logic-pointer</code></td><td>yes</td><td>DC-002</td><td>evm_delegatecall</td><td>high / high</td></tr>
+<tr><td><code>solana-missing-signer-withdraw</code></td><td>yes</td><td>SIGNER-002</td><td>solana_signer</td><td>critical / critical</td></tr>
+<tr><td><code>solana-token-cpi-unvalidated-deposit</code></td><td>yes</td><td>ACCT-002</td><td>solana_accounts</td><td>critical / critical</td></tr>
+<tr><td><code>solana-account-confusion-deposit</code></td><td>yes</td><td>ACCT-001</td><td>solana_accounts</td><td>high / high</td></tr>
+<tr><td><code>solana-unchecked-cpi-settle_external</code></td><td>yes</td><td>CPI-001</td><td>solana_cpi</td><td>high / high</td></tr>
+<tr><td><code>solana-precision-loss-deposit</code></td><td>yes</td><td>MATH-001</td><td>solana_math</td><td>high / high</td></tr>
+<tr><td><code>solana-unsafe-deser-load_foreign_config</code></td><td>yes</td><td>DESER-001</td><td>solana_deser</td><td>critical / critical</td></tr>
+<tr><td><code>solana-remaining-accounts-settle_many</code></td><td>yes</td><td>REMOT-001</td><td>solana_cpi</td><td>medium / medium</td></tr>
+</table>
+<h3>Ranked findings</h3><table><tr><th>#</th><th>id</th><th>sev</th><th>conf</th><th>rule</th><th>location</th><th>title</th></tr>
+<tr><td>1</td><td><code>SG-EVM-001</code></td><td><span class='badge critical'>critical</span></td><td>0.92</td><td>DC-001</td><td class='loc'>HyperVault.sol:54 migrate()</td><td><a href='#SG-EVM-001'>delegatecall to unvalidated target in migrate()</a></td></tr>
+<tr><td>2</td><td><code>SG-SOL-001</code></td><td><span class='badge critical'>critical</span></td><td>0.90</td><td>DESER-001</td><td class='loc'>lib.rs:117 load_foreign_config()</td><td><a href='#SG-SOL-001'>Unsafe cast of account data into `VaultConfig` in load_foreign_config()</a></td></tr>
+<tr><td>3</td><td><code>SG-EVM-002</code></td><td><span class='badge critical'>critical</span></td><td>0.90</td><td>SR-002</td><td class='loc'>HyperVault.sol:87 claimTreasuryGrant()</td><td><a href='#SG-EVM-002'>No spend-once tracking: claimTreasuryGrant() can be replayed forever</a></td></tr>
+<tr><td>4</td><td><code>SG-EVM-003</code></td><td><span class='badge critical'>critical</span></td><td>0.90</td><td>CEI-001</td><td class='loc'>HyperVault.sol:90 claimTreasuryGrant()</td><td><a href='#SG-EVM-003'>Reentrancy: state updated after external call in claimTreasuryGrant()</a></td></tr>
+<tr><td>5</td><td><code>SG-EVM-004</code></td><td><span class='badge critical'>critical</span></td><td>0.90</td><td>SD-001</td><td class='loc'>HyperVault.sol:102 decommission()</td><td><a href='#SG-EVM-004'>Reachable `selfdestruct` with caller-chosen beneficiary in decommission()</a></td></tr>
+<tr><td>6</td><td><code>SG-EVM-005</code></td><td><span class='badge critical'>critical</span></td><td>0.90</td><td>CEI-001</td><td class='loc'>Vault.sol:74 withdraw()</td><td><a href='#SG-EVM-005'>Reentrancy: state updated after external call in withdraw()</a></td></tr>
+<tr><td>7</td><td><code>SG-EVM-006</code></td><td><span class='badge critical'>critical</span></td><td>0.90</td><td>AC-001</td><td class='loc'>Vault.sol:83 adminDrain()</td><td><a href='#SG-EVM-006'>Missing access control on adminDrain()</a></td></tr>
+<tr><td>8</td><td><code>SG-EVM-007</code></td><td><span class='badge critical'>critical</span></td><td>0.90</td><td>CEI-001</td><td class='loc'>Vault.sol:85 adminDrain()</td><td><a href='#SG-EVM-007'>Reentrancy: state updated after external call in adminDrain()</a></td></tr>
+<tr><td>9</td><td><code>SG-SOL-002</code></td><td><span class='badge critical'>critical</span></td><td>0.88</td><td>SIGNER-001</td><td class='loc'>lib.rs:217 load_foreign_config()</td><td><a href='#SG-SOL-002'>Missing signer check on `raw_config` in load_foreign_config()</a></td></tr>
+<tr><td>10</td><td><code>SG-EVM-008</code></td><td><span class='badge critical'>critical</span></td><td>0.88</td><td>OR-001</td><td class='loc'>Vault.sol:120 assetValue()</td><td><a href='#SG-EVM-008'>AMM spot price used as valuation in assetValue()</a></td></tr>
+<tr><td>11</td><td><code>SG-SOL-003</code></td><td><span class='badge critical'>critical</span></td><td>0.85</td><td>SIGNER-002</td><td class='loc'>lib.rs:54 withdraw()</td><td><a href='#SG-SOL-003'>withdraw() writes state / moves value with no `Signer` account at all</a></td></tr>
+<tr><td>12</td><td><code>SG-SOL-004</code></td><td><span class='badge critical'>critical</span></td><td>0.85</td><td>SIGNER-002</td><td class='loc'>lib.rs:68 slash()</td><td><a href='#SG-SOL-004'>slash() writes state / moves value with no `Signer` account at all</a></td></tr>
+<tr><td>13</td><td><code>SG-SOL-005</code></td><td><span class='badge critical'>critical</span></td><td>0.85</td><td>SIGNER-002</td><td class='loc'>lib.rs:76 set_limiter()</td><td><a href='#SG-SOL-005'>set_limiter() writes state / moves value with no `Signer` account at all</a></td></tr>
+<tr><td>14</td><td><code>SG-SOL-006</code></td><td><span class='badge critical'>critical</span></td><td>0.80</td><td>ACCT-002</td><td class='loc'>lib.rs:39 deposit()</td><td><a href='#SG-SOL-006'>Token CPI over unvalidated account `user_token_account` in deposit()</a></td></tr>
+<tr><td>15</td><td><code>SG-SOL-007</code></td><td><span class='badge critical'>critical</span></td><td>0.80</td><td>CPI-002</td><td class='loc'>lib.rs:208 settle_external()</td><td><a href='#SG-SOL-007'>CPI target `signer_program` is an unvalidated account, not a Program</a></td></tr>
+<tr><td>16</td><td><code>SG-EVM-009</code></td><td><span class='badge critical'>critical</span></td><td>0.80</td><td>SD-002</td><td class='loc'>Vault.sol:85 adminDrain()</td><td><a href='#SG-EVM-009'>Value sent to a caller-chosen address in adminDrain()</a></td></tr>
+<tr><td>17</td><td><code>SG-SOL-008</code></td><td><span class='badge high'>high</span></td><td>0.88</td><td>SIGNER-001</td><td class='loc'>lib.rs:185 slash()</td><td><a href='#SG-SOL-008'>Missing signer check on `reporter` in slash()</a></td></tr>
+<tr><td>18</td><td><code>SG-SOL-009</code></td><td><span class='badge high'>high</span></td><td>0.88</td><td>SIGNER-001</td><td class='loc'>lib.rs:199 set_limiter()</td><td><a href='#SG-SOL-009'>Missing signer check on `authority` in set_limiter()</a></td></tr>
+<tr><td>19</td><td><code>SG-SOL-010</code></td><td><span class='badge high'>high</span></td><td>0.85</td><td>MATH-001</td><td class='loc'>lib.rs:31 deposit()</td><td><a href='#SG-SOL-010'>Precision loss: integer division before multiplication in deposit()</a></td></tr>
+<tr><td>20</td><td><code>SG-SOL-011</code></td><td><span class='badge high'>high</span></td><td>0.85</td><td>CPI-001</td><td class='loc'>lib.rs:94 settle_external()</td><td><a href='#SG-SOL-011'>Unchecked CPI: result of `program::invoke` discarded in settle_external()</a></td></tr>
+<tr><td>21</td><td><code>SG-EVM-010</code></td><td><span class='badge high'>high</span></td><td>0.85</td><td>EC-001</td><td class='loc'>HyperVault.sol:89 claimTreasuryGrant()</td><td><a href='#SG-EVM-010'>Unchecked value transfer result in claimTreasuryGrant()</a></td></tr>
+<tr><td>22</td><td><code>SG-EVM-011</code></td><td><span class='badge high'>high</span></td><td>0.85</td><td>AC-002</td><td class='loc'>Vault.sol:94 setOperator()</td><td><a href='#SG-EVM-011'>tx.origin used for authorisation in setOperator()</a></td></tr>
+<tr><td>23</td><td><code>SG-EVM-012</code></td><td><span class='badge high'>high</span></td><td>0.85</td><td>EC-001</td><td class='loc'>Vault.sol:111 refundPending()</td><td><a href='#SG-EVM-012'>Unchecked value transfer result in refundPending()</a></td></tr>
+<tr><td>24</td><td><code>SG-EVM-013</code></td><td><span class='badge high'>high</span></td><td>0.82</td><td>AC-003</td><td class='loc'>HyperVault.sol:94 setReserveFactor()</td><td><a href='#SG-EVM-013'>Missing access control on setReserveFactor() (writable: reserveFactorBps)</a></td></tr>
+<tr><td>25</td><td><code>SG-EVM-014</code></td><td><span class='badge high'>high</span></td><td>0.82</td><td>OR-002</td><td class='loc'>Vault.sol:121 assetValue()</td><td><a href='#SG-EVM-014'>Oracle round read without staleness/round checks in assetValue()</a></td></tr>
+<tr><td>26</td><td><code>SG-EVM-015</code></td><td><span class='badge high'>high</span></td><td>0.82</td><td>AC-003</td><td class='loc'>Vault.sol:130 setPriceFeed()</td><td><a href='#SG-EVM-015'>Missing access control on setPriceFeed() (writable: priceFeed)</a></td></tr>
+<tr><td>27</td><td><code>SG-SOL-012</code></td><td><span class='badge high'>high</span></td><td>0.80</td><td>ACCT-001</td><td class='loc'>lib.rs:154 deposit()</td><td><a href='#SG-SOL-012'>Unvalidated account type: `user_token_account` is UncheckedAccount in Deposit</a></td></tr>
+<tr><td>28</td><td><code>SG-SOL-013</code></td><td><span class='badge high'>high</span></td><td>0.80</td><td>ACCT-001</td><td class='loc'>lib.rs:208 settle_external()</td><td><a href='#SG-SOL-013'>Unvalidated account type: `signer_program` is UncheckedAccount in SettleExternal</a></td></tr>
+<tr><td>29</td><td><code>SG-SOL-014</code></td><td><span class='badge high'>high</span></td><td>0.80</td><td>ACCT-001</td><td class='loc'>lib.rs:217 load_foreign_config()</td><td><a href='#SG-SOL-014'>Unvalidated account type: `raw_config` is AccountInfo in LoadConfig</a></td></tr>
+<tr><td>30</td><td><code>SG-EVM-016</code></td><td><span class='badge high'>high</span></td><td>0.80</td><td>DC-002</td><td class='loc'>HyperVault.sol:61 setImplementation()</td><td><a href='#SG-EVM-016'>Unguarded write to proxy logic pointer `implementation`</a></td></tr>
+<tr><td>31</td><td><code>SG-EVM-017</code></td><td><span class='badge high'>high</span></td><td>0.80</td><td>SR-001</td><td class='loc'>HyperVault.sol:88 claimTreasuryGrant()</td><td><a href='#SG-EVM-017'>Unbound signature digest in claimTreasuryGrant() (cross-chain / cross-contract replay)</a></td></tr>
+<tr><td>32</td><td><code>SG-EVM-018</code></td><td><span class='badge high'>high</span></td><td>0.80</td><td>SF-001</td><td class='loc'>HyperVault.sol:109 recoverTokens()</td><td><a href='#SG-EVM-018'>Stranded funds: recoverTokens() is gated on `pendingAdmin`, which is never assigned</a></td></tr>
+<tr><td>33</td><td><code>SG-EVM-019</code></td><td><span class='badge high'>high</span></td><td>0.75</td><td>AC-001</td><td class='loc'>Vault.sol:106 refundPending()</td><td><a href='#SG-EVM-019'>Missing access control on refundPending()</a></td></tr>
+<tr><td>34</td><td><code>SG-SOL-015</code></td><td><span class='badge high'>high</span></td><td>0.70</td><td>CPI-003</td><td class='loc'>lib.rs:68 slash()</td><td><a href='#SG-SOL-015'>SPL token balance edited directly on `vault_token_account` instead of via CPI</a></td></tr>
+<tr><td>35</td><td><code>SG-SOL-016</code></td><td><span class='badge medium'>medium</span></td><td>0.80</td><td>MATH-003</td><td class='loc'>lib.rs:31 deposit()</td><td><a href='#SG-SOL-016'>Division by `vault.total_deposits` with no zero guard in deposit()</a></td></tr>
+<tr><td>36</td><td><code>SG-SOL-017</code></td><td><span class='badge medium'>medium</span></td><td>0.75</td><td>REMOT-001</td><td class='loc'>lib.rs:105 settle_many()</td><td><a href='#SG-SOL-017'>`remaining_accounts` indexed at [0] without a length check</a></td></tr>
+<tr><td>37</td><td><code>SG-SOL-018</code></td><td><span class='badge medium'>medium</span></td><td>0.75</td><td>ACCT-003</td><td class='loc'>lib.rs:149</td><td><a href='#SG-SOL-018'>PDA seeds constraint trusts a client-supplied bump</a></td></tr>
+<tr><td>38</td><td><code>SG-SOL-019</code></td><td><span class='badge medium'>medium</span></td><td>0.75</td><td>ACCT-003</td><td class='loc'>lib.rs:169</td><td><a href='#SG-SOL-019'>PDA seeds constraint trusts a client-supplied bump</a></td></tr>
+<tr><td>39</td><td><code>SG-SOL-020</code></td><td><span class='badge medium'>medium</span></td><td>0.70</td><td>AUTH-001</td><td class='loc'>lib.rs:17 initialize()</td><td><a href='#SG-SOL-020'>PDA authority depends on a client-supplied `bump` in initialize()</a></td></tr>
+<tr><td>40</td><td><code>SG-EVM-020</code></td><td><span class='badge medium'>medium</span></td><td>0.70</td><td>SR-003</td><td class='loc'>HyperVault.sol:87 claimTreasuryGrant()</td><td><a href='#SG-EVM-020'>No signature expiry in claimTreasuryGrant()</a></td></tr>
+<tr><td>41</td><td><code>SG-EVM-021</code></td><td><span class='badge medium'>medium</span></td><td>0.70</td><td>SF-003</td><td class='loc'>HyperVault.sol:110 recoverTokens()</td><td><a href='#SG-EVM-021'>Token recovery result is never checked in recoverTokens()</a></td></tr>
+<tr><td>42</td><td><code>SG-SOL-021</code></td><td><span class='badge medium'>medium</span></td><td>0.65</td><td>AUTH-003</td><td class='loc'>lib.rs:174 withdraw()</td><td><a href='#SG-SOL-021'>Authority account `user_authority` is used by withdraw() with no signer and no binding</a></td></tr>
+<tr><td>43</td><td><code>SG-EVM-022</code></td><td><span class='badge medium'>medium</span></td><td>0.65</td><td>OR-003</td><td class='loc'>HyperVault.sol:74 priceOf()</td><td><a href='#SG-EVM-022'>Single-source price oracle.spotPrice() decides value in priceOf()</a></td></tr>
+<tr><td>44</td><td><code>SG-SOL-022</code></td><td><span class='badge medium'>medium</span></td><td>0.60</td><td>MATH-002</td><td class='loc'>lib.rs:33 deposit()</td><td><a href='#SG-SOL-022'>Unchecked arithmetic on `shares` in deposit()</a></td></tr>
+<tr><td>45</td><td><code>SG-SOL-023</code></td><td><span class='badge medium'>medium</span></td><td>0.60</td><td>MATH-002</td><td class='loc'>lib.rs:55 withdraw()</td><td><a href='#SG-SOL-023'>Unchecked arithmetic on `shares` in withdraw()</a></td></tr>
+<tr><td>46</td><td><code>SG-EVM-023</code></td><td><span class='badge medium'>medium</span></td><td>0.60</td><td>SR-004</td><td class='loc'>HyperVault.sol:88 claimTreasuryGrant()</td><td><a href='#SG-EVM-023'>Raw ecrecover without malleability checks in claimTreasuryGrant()</a></td></tr>
+<tr><td>47</td><td><code>SG-SOL-024</code></td><td><span class='badge low'>low</span></td><td>0.60</td><td>AUTH-002</td><td class='loc'>lib.rs:169</td><td><a href='#SG-SOL-024'>`realloc::payer = vault_config` is not a funded signer in Withdraw</a></td></tr>
+<tr><td>48</td><td><code>SG-SOL-025</code></td><td><span class='badge low'>low</span></td><td>0.50</td><td>MATH-004</td><td class='loc'>lib.rs:67 slash()</td><td><a href='#SG-SOL-025'>Narrowing cast `as u64` on an amount in slash()</a></td></tr>
+<tr><td>49</td><td><code>SG-EVM-024</code></td><td><span class='badge low'>low</span></td><td>0.50</td><td>EC-003</td><td class='loc'>HyperVault.sol:90 claimTreasuryGrant()</td><td><a href='#SG-EVM-024'>Native `.transfer()` gas-stipend transfer in claimTreasuryGrant()</a></td></tr>
+</table><h3>Detail</h3>
+<details id='SG-EVM-001'><summary><span class='badge critical'>critical</span> <span>delegatecall to unvalidated target in migrate()</span> <span class='loc'>solidity/HyperVault.sol:54 (migrate)</span> <span class='note'>conf 0.92 &middot; DC-001 &middot; hyperevm</span></summary>
+<p>migrate() executes `target.delegatecall(...)`. the delegatecall target `target` is an instruction argument, so any caller chooses the code that runs inside this contract&#x27;s storage. delegatecall keeps this contract&#x27;s storage and msg.sender, so the callee can rewrite owner/admin/implementation slots, mint, drain, or call selfdestruct. Authorisation on the wrapper (absent) does not help if the target itself is attacker-chosen.</p>
+<pre>(bool ok, ) = target.delegatecall(data);</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Deploy a malicious implementation contract.</li><li>Call migrate() with your contract as the target (or first move the pointer via the unguarded setter).</li><li>Inside the callee, write the admin/owner slot, then use the admin path to take the funds.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Only delegatecall to a constant, admin-upgraded-with-timelock implementation address.</li><li>Add EIP-1967 slots + an `onlyProxyAdmin` + timelock upgrade path.</li><li>Validate `target.code.length &gt; 0` and that the target is in an allowlist.</li></ul><p class='note'>PoC stub: <code>pocs/sg-evm-001_sg_evm_001_delegatecall_to_unval.t.sol</code><br>run: <code>forge test --match-contract SgEvm001DelegatecallToUnvalidatedTargetIHarness -vvvv</code></p></div>
+</div>
+<p class='note'>skill <code>skills/delegatecall-proxy/SKILL.md</code> checklist satisfied:</p><ul><li>The delegatecall target resolves to a constant or admin-upgraded implementation address -</li><li>Writes to logic pointers are guarded by an admin role **and** a timelock/delay, and emit an</li></ul>
+</details>
+<details id='SG-SOL-001'><summary><span class='badge critical'>critical</span> <span>Unsafe cast of account data into `VaultConfig` in load_foreign_config()</span> <span class='loc'>solana/vault/programs/vault/src/lib.rs:117 (load_foreign_config)</span> <span class='note'>conf 0.90 &middot; DESER-001 &middot; solana</span></summary>
+<p>load_foreign_config() reinterprets borrowed account bytes as `*const VaultConfig` and dereferences it. The layout of an account is entirely caller-supplied: there is no owner check and no length/discriminator check here, so the program reads memory it never validated. That is a type-conflict / out-of-bounds read on a chain where the runtime will not save you - and even when it only reads garbage, the value becomes trusted state.</p>
+<pre>let cfg: &amp;VaultConfig = unsafe { &amp;*(data.as_ptr() as *const VaultConfig) };</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Create an account with the program&#x27;s own PDA-looking address (or any short account) and pass it in.</li><li>The cast reads whatever bytes exist - attacker-chosen numbers become `limiter`, authority, etc.</li><li>Use the forged field to unlock the privileged branch of the handler.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Use Anchor&#x27;s typed account (`Account&lt;&#x27;info, VaultConfig&gt;`), which verifies owner + discriminator.</li><li>If raw access is unavoidable: check `account.owner == &amp;id()`, then `VaultConfig::try_deserialize(&amp;mut &amp;data[8..])` and never dereference a cast.</li><li>Add `require!(data.len() &gt;= 8 + size_of::&lt;VaultConfig&gt;(), ...)` before reading.</li></ul><p class='note'>PoC stub: <code>pocs/sg-sol-001_sg_sol_001_unsafe_cast_of_accoun.rs</code><br>run: <code>cargo test --features test-suites sg_sol_001_unsafe_cast_of_account_data_into_vaul</code></p></div>
+</div>
+<p class='note'>skill <code>skills/solana-account-validation/SKILL.md</code> checklist satisfied:</p><ul><li>SPL accounts assert `owner == token_program`, the right `mint`, and the expected authority</li><li>`remaining_accounts` are length-checked **before** indexing and validated individually -</li></ul>
+</details>
+<details id='SG-EVM-002'><summary><span class='badge critical'>critical</span> <span>No spend-once tracking: claimTreasuryGrant() can be replayed forever</span> <span class='loc'>solidity/HyperVault.sol:87 (claimTreasuryGrant)</span> <span class='note'>conf 0.90 &middot; SR-002 &middot; hyperevm</span></summary>
+<p>claimTreasuryGrant() pays out on a verified signature but no nonce, no mapping write and no already-used check exists anywhere in the contract. The signer&#x27;s single authorisation is therefore an unlimited mint: the same (v, r, s) can be submitted in an unbounded number of transactions by anyone who has seen it once - including from public mempool history.</p>
+<pre>function claimTreasuryGrant(bytes32 doc, uint8 v, bytes32 r, bytes32 s, uint256 amount) external {</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Observe one legitimate use of claimTreasuryGrant() (mempool, front-end, an airdrop claim).</li><li>Call it again with the identical doc/v/r/s - the require() on the recovered address still passes.</li><li>Repeat until the contract is empty; gas is the only cost.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Track spend: `require(!used[hash]); used[hash] = true;` keyed on the full digest.</li><li>Or carry a per-signer monotonic nonce inside the signed payload and compare it to storage.</li></ul><p class='note'>PoC stub: <code>pocs/sg-evm-002_sg_evm_002_no_spend_once_trackin.t.sol</code><br>run: <code>forge test --match-contract SgEvm002NoSpendOnceTrackingClaimtreasuryHarness -vvvv</code></p></div>
+</div>
+<p class='note'>skill <code>skills/signature-replay/SKILL.md</code> checklist satisfied:</p><ul><li>A spend-once record exists (per-hash mapping or per-signer nonce) and is written in the same</li><li>Batch payloads bind the whole payload hash (no partial-subset replay).</li></ul>
+</details>
+<details id='SG-EVM-003'><summary><span class='badge critical'>critical</span> <span>Reentrancy: state updated after external call in claimTreasuryGrant()</span> <span class='loc'>solidity/HyperVault.sol:90 (claimTreasuryGrant)</span> <span class='note'>conf 0.90 &middot; CEI-001 &middot; hyperevm</span></summary>
+<p>claimTreasuryGrant() performs an external interaction (payable(msg.sender).transfer) at line 90 and only updates contract state afterwards (borrowed). A callee can re-enter claimTreasuryGrant() during that callback and still see the pre-call balance, so the same funds can be withdrawn repeatedly. No reentrancy guard and no checks-effects-interactions ordering were found in this function.</p>
+<pre>payable(msg.sender).transfer(amount);</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Deploy a malicious callee whose fallback/receive() calls back into claimTreasuryGrant().</li><li>On the first call, pass an amount the contract still thinks you are owed.</li><li>Inside the callback, call claimTreasuryGrant() again before the balance subtraction at line 91 has executed - the old balance is still readable.</li><li>Repeat until the contract&#x27;s native/ERC20 balance is drained.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Update all accounting before the external call (checks-effects-interactions).</li><li>Or add OpenZeppelin ReentrancyGuard: `nonReentrant` on claimTreasuryGrant().</li><li>Prefer push payments with an explicit withdraw-then-send ordering.</li></ul><p class='note'>PoC stub: <code>pocs/sg-evm-003_sg_evm_003_reentrancy_state_upda.t.sol</code><br>run: <code>forge test --match-contract SgEvm003ReentrancyStateUpdatedAfterExterHarness -vvvv</code></p></div>
+</div>
+<p class='note'>skill <code>skills/reentrancy/SKILL.md</code> checklist satisfied:</p><ul><li>State writes (`balances[...]`, totals, flags, allowances, nonces) are ordered strictly</li><li>A reentrancy guard (`nonReentrant`, OZ `ReentrancyGuard`, ERC-7201 transient storage</li><li>before** the interaction - checks-effects-interactions holds.</li><li>Callbacks from the callee (`onERC721Received`, `tokensReceived`, `ERC4626` deposit hooks,</li></ul>
+</details>
+<details id='SG-EVM-004'><summary><span class='badge critical'>critical</span> <span>Reachable `selfdestruct` with caller-chosen beneficiary in decommission()</span> <span class='loc'>solidity/HyperVault.sol:102 (decommission)</span> <span class='note'>conf 0.90 &middot; SD-001 &middot; hyperevm</span></summary>
+<p>decommission() can destroy IHyperCorePriceOracle and force-send the whole native balance to an address the caller picks (`beneficiary`). There is no authorisation check at all on this path. Destructible state also kills any index that assumed code persists, and it makes an irreversible action available without a timelock or governance delay.</p>
+<pre>selfdestruct(beneficiary);</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Call decommission() (directly, or through the unguarded entry that reaches it).</li><li>The contract&#x27;s storage is wiped and its ETH balance is pushed to the chosen beneficiary.</li><li>Every user balance recorded in the contract becomes unrecoverable.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Remove selfdestruct from application code; use a pause flag plus an explicit withdrawal route.</li><li>If a migration really is needed, gate it behind a timelock + multi-sig governance role and a fixed beneficiary.</li><li>Note that EIP-678 (Cancun and later) limits selfdestruct to same-transaction creation, but the storage/balance sweep still applies on pre-Pectra deployments and on HyperEVM.</li></ul><p class='note'>PoC stub: <code>pocs/sg-evm-004_sg_evm_004_reachable_selfdestruc.t.sol</code><br>run: <code>forge test --match-contract SgEvm004ReachableSelfdestructWithCallerCHarness -vvvv</code></p></div>
+</div>
+<p class='note'>skill <code>skills/fund-recovery/SKILL.md</code> checklist satisfied:</p><ul><li>`selfdestruct` does not exist in application code. If it does, it is reachable only behind a</li></ul>
+</details>
+<details id='SG-EVM-005'><summary><span class='badge critical'>critical</span> <span>Reentrancy: state updated after external call in withdraw()</span> <span class='loc'>solidity/Vault.sol:74 (withdraw)</span> <span class='note'>conf 0.90 &middot; CEI-001 &middot; evm</span></summary>
+<p>withdraw() performs an external interaction (msg.sender.call) at line 74 and only updates contract state afterwards (balanceOf[msg.sender], totalDeposits). A callee can re-enter withdraw() during that callback and still see the pre-call balance, so the same funds can be withdrawn repeatedly. No reentrancy guard and no checks-effects-interactions ordering were found in this function.</p>
+<pre>(bool ok, ) = msg.sender.call{value: amount}(&quot;&quot;);</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Deploy a malicious callee whose fallback/receive() calls back into withdraw().</li><li>On the first call, pass an amount the contract still thinks you are owed.</li><li>Inside the callback, call withdraw() again before the balance subtraction at line 76 has executed - the old balance is still readable.</li><li>Repeat until the contract&#x27;s native/ERC20 balance is drained.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Update all accounting before the external call (checks-effects-interactions).</li><li>Or add OpenZeppelin ReentrancyGuard: `nonReentrant` on withdraw().</li><li>Prefer push payments with an explicit withdraw-then-send ordering.</li></ul><p class='note'>PoC stub: <code>pocs/sg-evm-005_sg_evm_005_reentrancy_state_upda.t.sol</code><br>run: <code>forge test --match-contract SgEvm005ReentrancyStateUpdatedAfterExterHarness -vvvv</code></p></div>
+</div>
+<p class='note'>skill <code>skills/reentrancy/SKILL.md</code> checklist satisfied:</p><ul><li>State writes (`balances[...]`, totals, flags, allowances, nonces) are ordered strictly</li><li>A reentrancy guard (`nonReentrant`, OZ `ReentrancyGuard`, ERC-7201 transient storage</li><li>before** the interaction - checks-effects-interactions holds.</li><li>Callbacks from the callee (`onERC721Received`, `tokensReceived`, `ERC4626` deposit hooks,</li></ul>
+</details>
+<details id='SG-EVM-006'><summary><span class='badge critical'>critical</span> <span>Missing access control on adminDrain()</span> <span class='loc'>solidity/Vault.sol:83 (adminDrain)</span> <span class='note'>conf 0.90 &middot; AC-001 &middot; evm</span></summary>
+<p>adminDrain() is external, moves value to `to`, and writes payout, yet nothing in the function proves who the caller is: no `only*` modifier, no `require(msg.sender == ...)`, no role check, and no caller-scoped accounting. So the state it touches is not limited to the caller&#x27;s own balance - any address can call it. This is a total-loss path: the destination is fully caller-chosen.</p>
+<pre>function adminDrain(address to, uint256 amount) external {</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Call adminDrain() from an EOA you control, with the arguments you want.</li><li>No key compromise or front-running is required - the entry point is permissionless.</li><li>Repeat until the shared balance is gone (or until every victim&#x27;s claim has been consumed).</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Add `onlyOwner` / AccessControl `onlyRole(GUARDIAN_ROLE)` to adminDrain().</li><li>Or make the function self-service: derive the destination from `msg.sender` and let users pull their own funds.</li><li>Emit an event and add a per-call cap so a wrong grant of authority is bounded.</li></ul><p class='note'>PoC stub: <code>pocs/sg-evm-006_sg_evm_006_missing_access_contro.t.sol</code><br>run: <code>forge test --match-contract SgEvm006MissingAccessControlOnAdmindrainHarness -vvvv</code></p></div>
+</div>
+<p class='note'>skill <code>skills/access-control/SKILL.md</code> checklist satisfied:</p><ul><li>Each privileged function has either a modifier (`onlyOwner`, `onlyRole`, `onlyAdmin`)</li><li>Build the list of externally callable functions and mark which ones mutate privileged state.</li></ul>
+</details>
+<details id='SG-EVM-007'><summary><span class='badge critical'>critical</span> <span>Reentrancy: state updated after external call in adminDrain()</span> <span class='loc'>solidity/Vault.sol:85 (adminDrain)</span> <span class='note'>conf 0.90 &middot; CEI-001 &middot; evm</span></summary>
+<p>adminDrain() performs an external interaction (to.call) at line 85 and only updates contract state afterwards (totalDeposits). A callee can re-enter adminDrain() during that callback and still see the pre-call balance, so the same funds can be withdrawn repeatedly. No reentrancy guard and no checks-effects-interactions ordering were found in this function.</p>
+<pre>(bool sent, ) = to.call{value: payout}(&quot;&quot;);</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Deploy a malicious callee whose fallback/receive() calls back into adminDrain().</li><li>On the first call, pass an amount the contract still thinks you are owed.</li><li>Inside the callback, call adminDrain() again before the balance subtraction at line 87 has executed - the old balance is still readable.</li><li>Repeat until the contract&#x27;s native/ERC20 balance is drained.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Update all accounting before the external call (checks-effects-interactions).</li><li>Or add OpenZeppelin ReentrancyGuard: `nonReentrant` on adminDrain().</li><li>Prefer push payments with an explicit withdraw-then-send ordering.</li></ul><p class='note'>PoC stub: <code>pocs/sg-evm-007_sg_evm_007_reentrancy_state_upda.t.sol</code><br>run: <code>forge test --match-contract SgEvm007ReentrancyStateUpdatedAfterExterHarness -vvvv</code></p></div>
+</div>
+<p class='note'>skill <code>skills/reentrancy/SKILL.md</code> checklist satisfied:</p><ul><li>State writes (`balances[...]`, totals, flags, allowances, nonces) are ordered strictly</li><li>A reentrancy guard (`nonReentrant`, OZ `ReentrancyGuard`, ERC-7201 transient storage</li><li>before** the interaction - checks-effects-interactions holds.</li><li>Callbacks from the callee (`onERC721Received`, `tokensReceived`, `ERC4626` deposit hooks,</li></ul>
+</details>
+<details id='SG-SOL-002'><summary><span class='badge critical'>critical</span> <span>Missing signer check on `raw_config` in load_foreign_config()</span> <span class='loc'>solana/vault/programs/vault/src/lib.rs:217 (load_foreign_config)</span> <span class='note'>conf 0.88 &middot; SIGNER-001 &middot; solana</span></summary>
+<p>`raw_config` is declared as AccountInfo&lt;info&gt; in the `LoadConfig` accounts struct, so Anchor cannot prove it was signed. load_foreign_config() still uses it to authorise a privileged state change. On Solana an unsigned account is just bytes anyone can craft: an attacker supplies their own account with the right key/shape and the program accepts the instruction. The handler contains no `is_signer` check either and no `Signer` account exists in the struct at all.</p>
+<pre>pub raw_config: AccountInfo&lt;&#x27;info&gt;,</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Build the instruction with a self-created account in the `raw_config` slot (it does not need the real owner&#x27;s key pair). </li><li>Send the transaction - the program sees a well-formed account and no signature requirement fails.</li><li>Repeat for every victim&#x27;s data the handler writes through that account.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Type it as `Signer&lt;&#x27;info&gt;`: `raw_config: Signer&lt;&#x27;info&gt;` (Anchor enforces the signature).</li><li>Or add an explicit `require!(ctx.accounts.raw_config.is_signer, VaultError::MissingSigner);`.</li><li>Better: bind it to state with `has_one = raw_config` plus a PDA `seeds` constraint.</li></ul><p class='note'>PoC stub: <code>pocs/sg-sol-002_sg_sol_002_missing_signer_check_.rs</code><br>run: <code>cargo test --features test-suites sg_sol_002_missing_signer_check_on_raw_config_in</code></p></div>
+</div>
+<p class='note'>skill <code>skills/solana-signer/SKILL.md</code> checklist satisfied:</p><ul><li>Every account whose **signature** is required is typed `Signer&lt;&#x27;info&gt;`; the type system is</li><li>The key stored as the future authority (`vault.authority = authority.key()`) comes from a</li></ul>
+</details>
+<details id='SG-EVM-008'><summary><span class='badge critical'>critical</span> <span>AMM spot price used as valuation in assetValue()</span> <span class='loc'>solidity/Vault.sol:120 (assetValue)</span> <span class='note'>conf 0.88 &middot; OR-001 &middot; evm</span></summary>
+<p>assetValue() derives a price from in-pool reserves (`getReserves`), which is the pool&#x27;s own balance ratio rather than a traded price. Any caller with enough capital - typically a flash loan - can skew that ratio in a single transaction, and the contract will read the manipulated number in the same block. There is no time-weighting and no second source here.</p>
+<pre>(uint112 reserve0, uint112 reserve1, ) = pool.getReserves();</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Flash-loan a large amount of one side of the pool.</li><li>Swap it into the pool to move reserves (and therefore the printed price) in the same tx.</li><li>Call assetValue() - the inflated price is now the contract&#x27;s truth - then mint/borrow/liquidate.</li><li>Swap back and repay the loan; the profit is the difference in the contract&#x27;s accounting.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Use a time-weighted price (Chainlink TWAP or a multi-block Uniswap V2 `cumulativePrice` window).</li><li>Never let an in-block reserve ratio set collateral or payout values.</li><li>Add a max-deviation guard against a second source and reject out-of-band prints.</li></ul><p class='note'>PoC stub: <code>pocs/sg-evm-008_sg_evm_008_amm_spot_price_used_a.t.sol</code><br>run: <code>forge test --match-contract SgEvm008AmmSpotPriceUsedAsValuationInAssHarness -vvvv</code></p></div>
+</div>
+<p class='note'>skill <code>skills/oracle-price/SKILL.md</code> checklist satisfied:</p><ul><li>Identify the pricing source: in-pool reserves (spot), a single Chainlink round, a</li><li>The price cannot be moved inside the same transaction that consumes it (flash-loan</li><li>A second, independent source or a max-deviation circuit breaker exists for anything that</li></ul>
+</details>
+<details id='SG-SOL-003'><summary><span class='badge critical'>critical</span> <span>withdraw() writes state / moves value with no `Signer` account at all</span> <span class='loc'>solana/vault/programs/vault/src/lib.rs:54 (withdraw)</span> <span class='note'>conf 0.85 &middot; SIGNER-002 &middot; solana</span></summary>
+<p>The `Withdraw` constraint list contains no `Signer`, yet withdraw() performs a privileged operation (`.lamports_mut(`). Permissionless mutation is exactly the class of bug that empties programs on Solana: there is no `msg.sender` equivalent to fall back on, so the account list is the only authorisation surface.</p>
+<pre>ctx.accounts.user_authority.lamports_mut(|l| *l += amount)?;</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Call withdraw directly from any wallet - no signature from the configured authority is required.</li><li>Point the writable accounts at whatever you want changed.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Add `authority: Signer&lt;&#x27;info&gt;` and `#[account(constraint = authority.key() == vault_config.authority)]`.</li><li>Or derive the writable account as a PDA and sign with `seeds` so only the program can author it.</li></ul><p class='note'>PoC stub: <code>pocs/sg-sol-003_sg_sol_003_withdraw_writes_state.rs</code><br>run: <code>cargo test --features test-suites sg_sol_003_withdraw_writes_state_moves_value_wit</code></p></div>
+</div>
+<p class='note'>skill <code>skills/solana-signer/SKILL.md</code> checklist satisfied:</p><ul><li>Every account whose **signature** is required is typed `Signer&lt;&#x27;info&gt;`; the type system is</li></ul>
+</details>
+<details id='SG-SOL-004'><summary><span class='badge critical'>critical</span> <span>slash() writes state / moves value with no `Signer` account at all</span> <span class='loc'>solana/vault/programs/vault/src/lib.rs:68 (slash)</span> <span class='note'>conf 0.85 &middot; SIGNER-002 &middot; solana</span></summary>
+<p>The `Slash` constraint list contains no `Signer`, yet slash() performs a privileged operation (`+=`). Permissionless mutation is exactly the class of bug that empties programs on Solana: there is no `msg.sender` equivalent to fall back on, so the account list is the only authorisation surface.</p>
+<pre>ctx.accounts.vault_token_account.amount += shares;</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Call slash directly from any wallet - no signature from the configured authority is required.</li><li>Point the writable accounts at whatever you want changed.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Add `authority: Signer&lt;&#x27;info&gt;` and `#[account(constraint = authority.key() == vault_config.authority)]`.</li><li>Or derive the writable account as a PDA and sign with `seeds` so only the program can author it.</li></ul><p class='note'>PoC stub: <code>pocs/sg-sol-004_sg_sol_004_slash_writes_state_mo.rs</code><br>run: <code>cargo test --features test-suites sg_sol_004_slash_writes_state_moves_value_with_n</code></p></div>
+</div>
+<p class='note'>skill <code>skills/solana-signer/SKILL.md</code> checklist satisfied:</p><ul><li>Every account whose **signature** is required is typed `Signer&lt;&#x27;info&gt;`; the type system is</li></ul>
+</details>
+<details id='SG-SOL-005'><summary><span class='badge critical'>critical</span> <span>set_limiter() writes state / moves value with no `Signer` account at all</span> <span class='loc'>solana/vault/programs/vault/src/lib.rs:76 (set_limiter)</span> <span class='note'>conf 0.85 &middot; SIGNER-002 &middot; solana</span></summary>
+<p>The `SetLimiter` constraint list contains no `Signer`, yet set_limiter() performs a privileged operation (`ctx.accounts.vault_config.limiter = `). Permissionless mutation is exactly the class of bug that empties programs on Solana: there is no `msg.sender` equivalent to fall back on, so the account list is the only authorisation surface.</p>
+<pre>ctx.accounts.vault_config.limiter = limiter;</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Call set_limiter directly from any wallet - no signature from the configured authority is required.</li><li>Point the writable accounts at whatever you want changed.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Add `authority: Signer&lt;&#x27;info&gt;` and `#[account(constraint = authority.key() == vault_config.authority)]`.</li><li>Or derive the writable account as a PDA and sign with `seeds` so only the program can author it.</li></ul><p class='note'>PoC stub: <code>pocs/sg-sol-005_sg_sol_005_set_limiter_writes_st.rs</code><br>run: <code>cargo test --features test-suites sg_sol_005_set_limiter_writes_state_moves_value_</code></p></div>
+</div>
+<p class='note'>skill <code>skills/solana-signer/SKILL.md</code> checklist satisfied:</p><ul><li>Every account whose **signature** is required is typed `Signer&lt;&#x27;info&gt;`; the type system is</li></ul>
+</details>
+<details id='SG-SOL-006'><summary><span class='badge critical'>critical</span> <span>Token CPI over unvalidated account `user_token_account` in deposit()</span> <span class='loc'>solana/vault/programs/vault/src/lib.rs:39 (deposit)</span> <span class='note'>conf 0.80 &middot; ACCT-002 &middot; solana</span></summary>
+<p>deposit() hands `ctx.accounts.user_token_account` to an SPL token CPI while the account is only an UncheckedAccount. Nothing proves its owner is the token program, that it is the vault&#x27;s token account, or that its mint is the expected one. The CPI happily operates on whatever account the client supplied, which is the standard way vaults end up paying out of the wrong pot.</p>
+<pre>from: ctx.accounts.user_token_account.to_account_info(),</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Point `user_token_account` at a token account you control (or at any account whose data you can shape).</li><li>The vault debits/credits the wrong account; your own balance is the source of truth for it.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>`#[account(constraint = user_token_account.owner == program_authority.key() &amp;&amp; user_token_account.mint == expected_mint)]`</li><li>Type it `Account&lt;&#x27;info, TokenAccount&gt;` so Anchor deserialises and checks the owner.</li></ul><p class='note'>PoC stub: <code>pocs/sg-sol-006_sg_sol_006_token_cpi_over_unvali.rs</code><br>run: <code>cargo test --features test-suites sg_sol_006_token_cpi_over_unvalidated_account_us</code></p></div>
+</div>
+<p class='note'>skill <code>skills/solana-account-validation/SKILL.md</code> checklist satisfied:</p><ul><li>SPL accounts assert `owner == token_program`, the right `mint`, and the expected authority</li></ul>
+</details>
+<details id='SG-SOL-007'><summary><span class='badge critical'>critical</span> <span>CPI target `signer_program` is an unvalidated account, not a Program</span> <span class='loc'>solana/vault/programs/vault/src/lib.rs:208 (settle_external)</span> <span class='note'>conf 0.80 &middot; CPI-002 &middot; solana</span></summary>
+<p>`signer_program` is declared as UncheckedAccount in `SettleExternal` and is used as the program id for a cross-program call. Anchor only checks that an account is a *program* when it is typed `Program&lt;&#x27;info, T&gt;` (or when `is_program()` is called). Here the client picks the &#x27;program&#x27;, so the instruction is executed against code the program never vouched for - typically a spoofed token program that returns success without moving anything.</p>
+<pre>pub signer_program: UncheckedAccount&lt;&#x27;info&gt;,</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Deploy a fake program whose address you pass as `signer_program`.</li><li>It deserialises the args, returns Ok, and moves nothing.</li><li>The vault credits your position anyway - mint-without-deposit.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Type the account `Program&lt;&#x27;info, anchor_spl::token::Token&gt;` (or `System`).</li><li>Or `require!(ctx.accounts.signer_program.is_program(), VaultError::InvalidProgram);`.</li><li>Even better, use the CPI helper (`token::transfer`) which resolves the program from `CpiContext` types instead of a client field.</li></ul><p class='note'>PoC stub: <code>pocs/sg-sol-007_sg_sol_007_cpi_target_signer_pro.rs</code><br>run: <code>cargo test --features test-suites sg_sol_007_cpi_target_signer_program_is_an_unval</code></p></div>
+</div>
+<p class='note'>skill <code>skills/solana-cpi/SKILL.md</code> checklist satisfied:</p><ul><li>The callee is a `Program&lt;&#x27;info, T&gt;` account (or `is_program()` verified), never a raw</li></ul>
+</details>
+<details id='SG-EVM-009'><summary><span class='badge critical'>critical</span> <span>Value sent to a caller-chosen address in adminDrain()</span> <span class='loc'>solidity/Vault.sol:85 (adminDrain)</span> <span class='note'>conf 0.80 &middot; SD-002 &middot; evm</span></summary>
+<p>adminDrain() moves native value to `to`, which is supplied by the caller rather than derived from the contract&#x27;s own accounting. It is unguarded. Any caller (or any caller that can reach this path) chooses the destination, so shared funds can be redirected at will.</p>
+<pre>(bool sent, ) = to.call{value: payout}(&quot;&quot;);</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Call adminDrain() with `to` set to an address you control.</li><li>Repeat for each victim&#x27;s recorded balance if the function is parameterised by user.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Derive the recipient from the caller (`msg.sender`) or from a per-user withdrawal map.</li><li>Use pull-payments: credit an internal balance, let users claim it themselves.</li></ul><p class='note'>PoC stub: <code>pocs/sg-evm-009_sg_evm_009_value_sent_to_a_calle.t.sol</code><br>run: <code>forge test --match-contract SgEvm009ValueSentToACallerChosenAddressIHarness -vvvv</code></p></div>
+</div>
+<p class='note'>skill <code>skills/fund-recovery/SKILL.md</code> checklist satisfied:</p><ul><li>No value-moving call takes its destination from instruction arguments without deriving it from</li></ul>
+</details>
+<details id='SG-SOL-008'><summary><span class='badge high'>high</span> <span>Missing signer check on `reporter` in slash()</span> <span class='loc'>solana/vault/programs/vault/src/lib.rs:185 (slash)</span> <span class='note'>conf 0.88 &middot; SIGNER-001 &middot; solana</span></summary>
+<p>`reporter` is declared as UncheckedAccount&lt;info&gt; in the `Slash` accounts struct, so Anchor cannot prove it was signed. slash() still uses it to authorise a privileged decision. On Solana an unsigned account is just bytes anyone can craft: an attacker supplies their own account with the right key/shape and the program accepts the instruction. The handler contains no `is_signer` check either and no `Signer` account exists in the struct at all.</p>
+<pre>pub reporter: UncheckedAccount&lt;&#x27;info&gt;,</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Build the instruction with a self-created account in the `reporter` slot (it does not need the real owner&#x27;s key pair). </li><li>Send the transaction - the program sees a well-formed account and no signature requirement fails.</li><li>Repeat for every victim&#x27;s data the handler writes through that account.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Type it as `Signer&lt;&#x27;info&gt;`: `reporter: Signer&lt;&#x27;info&gt;` (Anchor enforces the signature).</li><li>Or add an explicit `require!(ctx.accounts.reporter.is_signer, VaultError::MissingSigner);`.</li><li>Better: bind it to state with `has_one = reporter` plus a PDA `seeds` constraint.</li></ul><p class='note'>PoC stub: <code>pocs/sg-sol-008_sg_sol_008_missing_signer_check_.rs</code><br>run: <code>cargo test --features test-suites sg_sol_008_missing_signer_check_on_reporter_in_s</code></p></div>
+</div>
+<p class='note'>skill <code>skills/solana-signer/SKILL.md</code> checklist satisfied:</p><ul><li>Every account whose **signature** is required is typed `Signer&lt;&#x27;info&gt;`; the type system is</li><li>The key stored as the future authority (`vault.authority = authority.key()`) comes from a</li></ul>
+</details>
+<details id='SG-SOL-009'><summary><span class='badge high'>high</span> <span>Missing signer check on `authority` in set_limiter()</span> <span class='loc'>solana/vault/programs/vault/src/lib.rs:199 (set_limiter)</span> <span class='note'>conf 0.88 &middot; SIGNER-001 &middot; solana</span></summary>
+<p>`authority` is declared as AccountInfo&lt;info&gt; in the `SetLimiter` accounts struct, so Anchor cannot prove it was signed. set_limiter() still uses it to authorise a privileged decision. On Solana an unsigned account is just bytes anyone can craft: an attacker supplies their own account with the right key/shape and the program accepts the instruction. The handler contains no `is_signer` check either and no `Signer` account exists in the struct at all.</p>
+<pre>pub authority: AccountInfo&lt;&#x27;info&gt;,</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Build the instruction with a self-created account in the `authority` slot (it does not need the real owner&#x27;s key pair). </li><li>Send the transaction - the program sees a well-formed account and no signature requirement fails.</li><li>Repeat for every victim&#x27;s data the handler writes through that account.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Type it as `Signer&lt;&#x27;info&gt;`: `authority: Signer&lt;&#x27;info&gt;` (Anchor enforces the signature).</li><li>Or add an explicit `require!(ctx.accounts.authority.is_signer, VaultError::MissingSigner);`.</li><li>Better: bind it to state with `has_one = authority` plus a PDA `seeds` constraint.</li></ul><p class='note'>PoC stub: <code>pocs/sg-sol-009_sg_sol_009_missing_signer_check_.rs</code><br>run: <code>cargo test --features test-suites sg_sol_009_missing_signer_check_on_authority_in_</code></p></div>
+</div>
+<p class='note'>skill <code>skills/solana-signer/SKILL.md</code> checklist satisfied:</p><ul><li>Every account whose **signature** is required is typed `Signer&lt;&#x27;info&gt;`; the type system is</li><li>The key stored as the future authority (`vault.authority = authority.key()`) comes from a</li></ul>
+</details>
+<details id='SG-SOL-010'><summary><span class='badge high'>high</span> <span>Precision loss: integer division before multiplication in deposit()</span> <span class='loc'>solana/vault/programs/vault/src/lib.rs:31 (deposit)</span> <span class='note'>conf 0.85 &middot; MATH-001 &middot; solana</span></summary>
+<p>deposit() computes `(amount / vault.total_deposits) * 1_000_000_000`. Rust integers truncate, so dividing first throws away the remainder before the scaling factor is applied: for `amount &lt; divisor` the result is exactly zero, and for larger amounts the user loses up to `divisor-1` units of precision per operation. This is the classic share-accounting bug - deposits silently credit 0 shares.</p>
+<pre>let shares = (amount / vault.total_deposits) * 1_000_000_000; // precision loss</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Deposit an amount smaller than the divisor (`total_deposits` here) and receive 0 shares.</li><li>Do it repeatedly: the pool&#x27;s recorded deposits grow while your share balance stays at zero - or, inverted, you can take shares that were never paid for.</li><li>Round the other way at withdrawal to extract the residual dust on every user.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Multiply first, divide last: `let shares = amount.checked_mul(SCALE)?.checked_div(total)?;`</li><li>Use `u128` intermediates (`(amount as u128 * SCALE / total) as u64`).</li><li>Track a virtual offset (ERC-4626 style inflation guard) so dust cannot be free-minted.</li></ul><p class='note'>PoC stub: <code>pocs/sg-sol-010_sg_sol_010_precision_loss_intege.rs</code><br>run: <code>cargo test --features test-suites sg_sol_010_precision_loss_integer_division_befor</code></p></div>
+</div>
+<p class='note'>skill <code>skills/solana-math/SKILL.md</code> checklist satisfied:</p><ul><li>Multiplication happens **before** division; division-first expressions are precision-loss</li><li>Rounding direction is deliberate and always favours the pool (virtual offset / ERC-4626-style</li></ul>
+</details>
+<details id='SG-SOL-011'><summary><span class='badge high'>high</span> <span>Unchecked CPI: result of `program::invoke` discarded in settle_external()</span> <span class='loc'>solana/vault/programs/vault/src/lib.rs:94 (settle_external)</span> <span class='note'>conf 0.85 &middot; CPI-001 &middot; solana</span></summary>
+<p>settle_external() performs a cross-program invocation and throws the `Result` away (no `?`, no `require!`). If the callee reverts, the CPI error is swallowed and this handler still returns `Ok(())`, so the program records the external operation as if it succeeded. Every downstream accounting decision then runs on a state that never happened.</p>
+<pre>anchor_lang::solana_program::program::invoke(&amp;instruction, &amp;account_infos);</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Force the callee to fail (insufficient funds, wrong owner, frozen account).</li><li>The CPI error never propagates; settle_external() returns success.</li><li>The program&#x27;s own bookkeeping now diverges from on-chain reality - withdraw against it.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Propagate: `program::invoke(&amp;instruction, &amp;account_infos)?;`</li><li>Or `require!(result.is_ok(), VaultError::CpiFailed);` with a real error variant.</li><li>Return the CPI error unchanged so clients see why the transaction failed.</li></ul><p class='note'>PoC stub: <code>pocs/sg-sol-011_sg_sol_011_unchecked_cpi_result_.rs</code><br>run: <code>cargo test --features test-suites sg_sol_011_unchecked_cpi_result_of_program_invok</code></p></div>
+</div>
+<p class='note'>skill <code>skills/solana-cpi/SKILL.md</code> checklist satisfied:</p><ul><li>Every CPI result is propagated (`?`) or explicitly handled; a dropped `Result` means the</li></ul>
+</details>
+<details id='SG-EVM-010'><summary><span class='badge high'>high</span> <span>Unchecked value transfer result in claimTreasuryGrant()</span> <span class='loc'>solidity/HyperVault.sol:89 (claimTreasuryGrant)</span> <span class='note'>conf 0.85 &middot; EC-001 &middot; hyperevm</span></summary>
+<p>claimTreasuryGrant() calls out to e(msg.sender) and ignores the result. e(msg.sender).transfer() can fail silently: low-level `call` returns false instead of reverting, and `send`/`transfer` return false when the recipient cannot accept the value. State that was already updated before the call is not rolled back, so the contract&#x27;s view of itself diverges from the chain - for accounting code that is a direct loss of user funds.</p>
+<pre>require(signer == admin, &quot;hyprivault: bad signature&quot;);</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Make the callee fail on purpose: revert, run out of gas, or return false (non-standard ERC20).</li><li>Trigger claimTreasuryGrant() so the accounting step succeeds while the value move fails.</li><li>Withdraw/claim again with the state still advanced.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>`(bool ok, ) = target.call{value: v}(&quot;&quot;); require(ok, &quot;transfer failed&quot;);`</li><li>Or use OpenZeppelin Address.sendValue with an explicit revert.</li><li>For non-standard ERC20s use `SafeERC20.safeTransfer` instead of `transfer`.</li></ul><p class='note'>PoC stub: <code>pocs/sg-evm-010_sg_evm_010_unchecked_value_trans.t.sol</code><br>run: <code>forge test --match-contract SgEvm010UncheckedValueTransferResultInClHarness -vvvv</code></p></div>
+</div>
+<p class='note'>skill <code>skills/external-calls/SKILL.md</code> checklist satisfied:</p><ul><li>Non-standard ERC20s (USDT-style no-return, fee-on-transfer, rebasing) are handled with</li></ul>
+</details>
+<details id='SG-EVM-011'><summary><span class='badge high'>high</span> <span>tx.origin used for authorisation in setOperator()</span> <span class='loc'>solidity/Vault.sol:94 (setOperator)</span> <span class='note'>conf 0.85 &middot; AC-002 &middot; evm</span></summary>
+<p>setOperator() authorises the caller with `tx.origin` instead of `msg.sender`. tx.origin is the EOA that started the transaction and it keeps equaling the owner even when the owner is tricked into calling a malicious contract first. Any phishing-style interaction therefore hands over full authorisation of this function, which is exactly why Solidity deprecated the pattern.</p>
+<pre>require(tx.origin == owner, &quot;vault: not owner (tx.origin)&quot;);</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Lure the authorised EOA into calling a contract you control (a small incentive is enough).</li><li>From that contract&#x27;s fallback, call setOperator(): `tx.origin == owner` still holds.</li><li>Authorisation is granted while `msg.sender` is your contract.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Compare against `msg.sender`.</li><li>If anti-contract phishing resistance is genuinely wanted, add `require(tx.origin == msg.sender)` *in addition to* the sender check, never instead of it.</li></ul><p class='note'>PoC stub: <code>pocs/sg-evm-011_sg_evm_011_tx_origin_used_for_au.t.sol</code><br>run: <code>forge test --match-contract SgEvm011TxOriginUsedForAuthorisationInSeHarness -vvvv</code></p></div>
+</div>
+<p class='note'>skill <code>skills/access-control/SKILL.md</code> checklist satisfied:</p><ul><li>`tx.origin` is **never** the authorisation basis (`msg.sender` is the caller).</li></ul>
+</details>
+<details id='SG-EVM-012'><summary><span class='badge high'>high</span> <span>Unchecked value transfer result in refundPending()</span> <span class='loc'>solidity/Vault.sol:111 (refundPending)</span> <span class='note'>conf 0.85 &middot; EC-001 &middot; evm</span></summary>
+<p>refundPending() calls out to n and ignores the result. n.transfer() can fail silently: low-level `call` returns false instead of reverting, and `send`/`transfer` return false when the recipient cannot accept the value. State that was already updated before the call is not rolled back, so the contract&#x27;s view of itself diverges from the chain - for accounting code that is a direct loss of user funds.</p>
+<pre>pendingRewards[user] = 0;</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Make the callee fail on purpose: revert, run out of gas, or return false (non-standard ERC20).</li><li>Trigger refundPending() so the accounting step succeeds while the value move fails.</li><li>Withdraw/claim again with the state still advanced.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>`(bool ok, ) = target.call{value: v}(&quot;&quot;); require(ok, &quot;transfer failed&quot;);`</li><li>Or use OpenZeppelin Address.sendValue with an explicit revert.</li><li>For non-standard ERC20s use `SafeERC20.safeTransfer` instead of `transfer`.</li></ul><p class='note'>PoC stub: <code>pocs/sg-evm-012_sg_evm_012_unchecked_value_trans.t.sol</code><br>run: <code>forge test --match-contract SgEvm012UncheckedValueTransferResultInReHarness -vvvv</code></p></div>
+</div>
+<p class='note'>skill <code>skills/external-calls/SKILL.md</code> checklist satisfied:</p><ul><li>Non-standard ERC20s (USDT-style no-return, fee-on-transfer, rebasing) are handled with</li></ul>
+</details>
+<details id='SG-EVM-013'><summary><span class='badge high'>high</span> <span>Missing access control on setReserveFactor() (writable: reserveFactorBps)</span> <span class='loc'>solidity/HyperVault.sol:94 (setReserveFactor)</span> <span class='note'>conf 0.82 &middot; AC-003 &middot; hyperevm</span></summary>
+<p>setReserveFactor() rewrites security-critical storage (reserveFactorBps) with no authorisation check. An unguarded price feed, fee, cap or reserve parameter is the usual first step of a composed exploit: the attacker does not break the vault directly, they turn the vault&#x27;s own inputs until a legitimate code path pays them. On HyperEVM treat HyperCore-style reads with the same caution.</p>
+<pre>function setReserveFactor(uint256 bps) external {</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Call setReserveFactor() to install a price/parameter you control.</li><li>Then trigger the normal accounting path (mint, redeem, liquidate) that reads it.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Guard with `onlyOwner`/role, plus an `Upgraded`/`ParamSet` event.</li><li>Add a max-move bound and a timelock for security-critical values.</li><li>Prefer AccessControl roles over a single `owner` address.</li></ul><p class='note'>PoC stub: <code>pocs/sg-evm-013_sg_evm_013_missing_access_contro.t.sol</code><br>run: <code>forge test --match-contract SgEvm013MissingAccessControlOnSetreserveHarness -vvvv</code></p></div>
+</div>
+<p class='note'>skill <code>skills/access-control/SKILL.md</code> checklist satisfied:</p><ul><li>Each privileged function has either a modifier (`onlyOwner`, `onlyRole`, `onlyAdmin`)</li><li>Build the list of externally callable functions and mark which ones mutate privileged state.</li></ul>
+</details>
+<details id='SG-EVM-014'><summary><span class='badge high'>high</span> <span>Oracle round read without staleness/round checks in assetValue()</span> <span class='loc'>solidity/Vault.sol:121 (assetValue)</span> <span class='note'>conf 0.82 &middot; OR-002 &middot; evm</span></summary>
+<p>assetValue() takes the answer from `latestRoundData()` but never inspects `updatedAt`, `startedAt`, `answeredInRound` or `roundId`. A stale round, a round still in progress, or a negative/zero answer therefore passes straight through, and the contract keeps pricing off a print that may be hours old. The `require(answer &gt; 0)` guard alone is not a freshness check.</p>
+<pre>(, int256 answer, , , ) = priceFeed.latestRoundData();</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Wait for the feed to stop updating (heartbeat exceeded) during volatility, or during a keeper outage.</li><li>Trade the underlying asset so the market moves while the contract still uses the old print.</li><li>Borrow/liquidate against the stale valuation.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Require `updatedAt != 0 &amp;&amp; block.timestamp - updatedAt &lt;= MAX_STALENESS_SECONDS`.</li><li>Require `answeredInRound &gt;= roundId` and `answer &gt; 0`.</li><li>Fall back to a second feed (or pause) when the check fails.</li></ul><p class='note'>PoC stub: <code>pocs/sg-evm-014_sg_evm_014_oracle_round_read_wit.t.sol</code><br>run: <code>forge test --match-contract SgEvm014OracleRoundReadWithoutStalenessRHarness -vvvv</code></p></div>
+</div>
+<p class='note'>skill <code>skills/oracle-price/SKILL.md</code> checklist satisfied:</p><ul><li>Chainlink reads validate all four of: `updatedAt` freshness, `answeredInRound &gt;= roundId`,</li></ul>
+</details>
+<details id='SG-EVM-015'><summary><span class='badge high'>high</span> <span>Missing access control on setPriceFeed() (writable: priceFeed)</span> <span class='loc'>solidity/Vault.sol:130 (setPriceFeed)</span> <span class='note'>conf 0.82 &middot; AC-003 &middot; evm</span></summary>
+<p>setPriceFeed() rewrites security-critical storage (priceFeed) with no authorisation check. An unguarded price feed, fee, cap or reserve parameter is the usual first step of a composed exploit: the attacker does not break the vault directly, they turn the vault&#x27;s own inputs until a legitimate code path pays them. On this chain treat HyperCore-style reads with the same caution.</p>
+<pre>function setPriceFeed(address feed) external {</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Call setPriceFeed() to install a price/parameter you control.</li><li>Then trigger the normal accounting path (mint, redeem, liquidate) that reads it.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Guard with `onlyOwner`/role, plus an `Upgraded`/`ParamSet` event.</li><li>Add a max-move bound and a timelock for security-critical values.</li><li>Prefer AccessControl roles over a single `owner` address.</li></ul><p class='note'>PoC stub: <code>pocs/sg-evm-015_sg_evm_015_missing_access_contro.t.sol</code><br>run: <code>forge test --match-contract SgEvm015MissingAccessControlOnSetpricefeHarness -vvvv</code></p></div>
+</div>
+<p class='note'>skill <code>skills/access-control/SKILL.md</code> checklist satisfied:</p><ul><li>Each privileged function has either a modifier (`onlyOwner`, `onlyRole`, `onlyAdmin`)</li><li>Build the list of externally callable functions and mark which ones mutate privileged state.</li></ul>
+</details>
+<details id='SG-SOL-012'><summary><span class='badge high'>high</span> <span>Unvalidated account type: `user_token_account` is UncheckedAccount in Deposit</span> <span class='loc'>solana/vault/programs/vault/src/lib.rs:154 (deposit)</span> <span class='note'>conf 0.80 &middot; ACCT-001 &middot; solana</span></summary>
+<p>`user_token_account` in the `Deposit` constraint list is typed as UncheckedAccount&lt;info&gt;, so Anchor performs no deserialisation, owner or discriminator check on it - yet deposit() passes it into program logic. That is account-confusion territory: an attacker can substitute a look-alike account (wrong owner, wrong mint, wrong program) and the handler has no way to notice. Typing it as `Account&lt;&#x27;info, T&gt;` / `Program&lt;&#x27;info, T&gt;` makes the runtime enforce it for free.</p>
+<pre>pub user_token_account: UncheckedAccount&lt;&#x27;info&gt;,</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Create any account with a matching shape (or reuse one you own) and place it in the `user_token_account` slot.</li><li>Because ownership/discriminator are not verified, the handler treats it as trusted.</li><li>Combine with the missing signer path to redirect value.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Use a concrete type: `Account&lt;&#x27;info, TokenAccount&gt;` / `Program&lt;&#x27;info, Token&gt;` / `Account&lt;&#x27;info, VaultPda&gt;`.</li><li>Or validate by hand: `require!(acc.owner == &amp;anchor_spl::token::ID, ...)` and check the discriminator/length.</li><li>Add `#[account(..., token::mint = expected_mint)]` style constraints for SPL accounts.</li></ul><p class='note'>PoC stub: <code>pocs/sg-sol-012_sg_sol_012_unvalidated_account_t.rs</code><br>run: <code>cargo test --features test-suites sg_sol_012_unvalidated_account_type_user_token_a</code></p></div>
+</div>
+<p class='note'>skill <code>skills/solana-account-validation/SKILL.md</code> checklist satisfied:</p><ul><li>SPL accounts assert `owner == token_program`, the right `mint`, and the expected authority</li><li>Every account that authorises a privileged action is typed `Signer&lt;&#x27;info&gt;` (or its</li></ul>
+</details>
+<details id='SG-SOL-013'><summary><span class='badge high'>high</span> <span>Unvalidated account type: `signer_program` is UncheckedAccount in SettleExternal</span> <span class='loc'>solana/vault/programs/vault/src/lib.rs:208 (settle_external)</span> <span class='note'>conf 0.80 &middot; ACCT-001 &middot; solana</span></summary>
+<p>`signer_program` in the `SettleExternal` constraint list is typed as UncheckedAccount&lt;info&gt;, so Anchor performs no deserialisation, owner or discriminator check on it - yet settle_external() passes it into program logic. That is account-confusion territory: an attacker can substitute a look-alike account (wrong owner, wrong mint, wrong program) and the handler has no way to notice. Typing it as `Account&lt;&#x27;info, T&gt;` / `Program&lt;&#x27;info, T&gt;` makes the runtime enforce it for free.</p>
+<pre>pub signer_program: UncheckedAccount&lt;&#x27;info&gt;,</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Create any account with a matching shape (or reuse one you own) and place it in the `signer_program` slot.</li><li>Because ownership/discriminator are not verified, the handler treats it as trusted.</li><li>Combine with the missing signer path to redirect value.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Use a concrete type: `Account&lt;&#x27;info, TokenAccount&gt;` / `Program&lt;&#x27;info, Token&gt;` / `Account&lt;&#x27;info, VaultPda&gt;`.</li><li>Or validate by hand: `require!(acc.owner == &amp;anchor_spl::token::ID, ...)` and check the discriminator/length.</li><li>Add `#[account(..., token::mint = expected_mint)]` style constraints for SPL accounts.</li></ul><p class='note'>PoC stub: <code>pocs/sg-sol-013_sg_sol_013_unvalidated_account_t.rs</code><br>run: <code>cargo test --features test-suites sg_sol_013_unvalidated_account_type_signer_progr</code></p></div>
+</div>
+<p class='note'>skill <code>skills/solana-account-validation/SKILL.md</code> checklist satisfied:</p><ul><li>SPL accounts assert `owner == token_program`, the right `mint`, and the expected authority</li><li>Every account that authorises a privileged action is typed `Signer&lt;&#x27;info&gt;` (or its</li></ul>
+</details>
+<details id='SG-SOL-014'><summary><span class='badge high'>high</span> <span>Unvalidated account type: `raw_config` is AccountInfo in LoadConfig</span> <span class='loc'>solana/vault/programs/vault/src/lib.rs:217 (load_foreign_config)</span> <span class='note'>conf 0.80 &middot; ACCT-001 &middot; solana</span></summary>
+<p>`raw_config` in the `LoadConfig` constraint list is typed as AccountInfo&lt;info&gt;, so Anchor performs no deserialisation, owner or discriminator check on it - yet load_foreign_config() passes it into program logic. That is account-confusion territory: an attacker can substitute a look-alike account (wrong owner, wrong mint, wrong program) and the handler has no way to notice. Typing it as `Account&lt;&#x27;info, T&gt;` / `Program&lt;&#x27;info, T&gt;` makes the runtime enforce it for free.</p>
+<pre>pub raw_config: AccountInfo&lt;&#x27;info&gt;,</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Create any account with a matching shape (or reuse one you own) and place it in the `raw_config` slot.</li><li>Because ownership/discriminator are not verified, the handler treats it as trusted.</li><li>Combine with the missing signer path to redirect value.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Use a concrete type: `Account&lt;&#x27;info, TokenAccount&gt;` / `Program&lt;&#x27;info, Token&gt;` / `Account&lt;&#x27;info, VaultPda&gt;`.</li><li>Or validate by hand: `require!(acc.owner == &amp;anchor_spl::token::ID, ...)` and check the discriminator/length.</li><li>Add `#[account(..., token::mint = expected_mint)]` style constraints for SPL accounts.</li></ul><p class='note'>PoC stub: <code>pocs/sg-sol-014_sg_sol_014_unvalidated_account_t.rs</code><br>run: <code>cargo test --features test-suites sg_sol_014_unvalidated_account_type_raw_config_i</code></p></div>
+</div>
+<p class='note'>skill <code>skills/solana-account-validation/SKILL.md</code> checklist satisfied:</p><ul><li>SPL accounts assert `owner == token_program`, the right `mint`, and the expected authority</li><li>Every account that authorises a privileged action is typed `Signer&lt;&#x27;info&gt;` (or its</li></ul>
+</details>
+<details id='SG-EVM-016'><summary><span class='badge high'>high</span> <span>Unguarded write to proxy logic pointer `implementation`</span> <span class='loc'>solidity/HyperVault.sol:61 (setImplementation)</span> <span class='note'>conf 0.80 &middot; DC-002 &middot; hyperevm</span></summary>
+<p>setImplementation() assigns `implementation` with no authorisation check. Whoever controls that slot controls the logic every delegatecall in this proxy resolves to, which is equivalent to owning the contract and all of its storage. This is the storage-collision/upgrade footgun class: the slot is also shared with the implementation&#x27;s own layout, so ordering matters.</p>
+<pre>implementation = newImpl;</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Point `implementation` at a contract you wrote.</li><li>Trigger the fallback/delegate path - all subsequent calls run your code in this storage.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Guard with `onlyProxyAdmin` + AccessControl role, and emit an Upgraded event.</li><li>Use EIP-1967/ERC-1967 upgradeable proxies from OpenZeppelin rather than a hand-rolled slot.</li><li>Keep implementation state in a namespaced storage gap to avoid collisions.</li></ul><p class='note'>PoC stub: <code>pocs/sg-evm-016_sg_evm_016_unguarded_write_to_pr.t.sol</code><br>run: <code>forge test --match-contract SgEvm016UnguardedWriteToProxyLogicPointeHarness -vvvv</code></p></div>
+</div>
+<p class='note'>skill <code>skills/delegatecall-proxy/SKILL.md</code> checklist satisfied:</p><ul><li>Writes to logic pointers are guarded by an admin role **and** a timelock/delay, and emit an</li></ul>
+</details>
+<details id='SG-EVM-017'><summary><span class='badge high'>high</span> <span>Unbound signature digest in claimTreasuryGrant() (cross-chain / cross-contract replay)</span> <span class='loc'>solidity/HyperVault.sol:88 (claimTreasuryGrant)</span> <span class='note'>conf 0.80 &middot; SR-001 &middot; hyperevm</span></summary>
+<p>claimTreasuryGrant() verifies a signature with raw `ecrecover` on a caller-supplied hash. The digest does not commit to the verifying contract address or the chain id (no EIP-712 domain separator), so one valid signature is valid everywhere the same bytecode is deployed - every fork, every testnet-to-mainnet copy, and every sibling contract that shares the signer.</p>
+<pre>address signer = ecrecover(doc, v, r, s);</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Capture a legitimate signed payload on chain A (or from any off-chain consumer of the signer).</li><li>Replay it verbatim against the same deployment on chain B / a sibling contract.</li><li>No forging is required: the signature is authentic, just in the wrong context.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Use OpenZeppelin EIP712 + `ECDSA.recover(typedDigest, v, r, s)` so the domain binds `address(this)` and `block.chainid`.</li><li>If hand-rolled, hash `0x19 0x01 domainSeparator structHash` and cache the domain separator including chainid so forks invalidate it.</li></ul><p class='note'>PoC stub: <code>pocs/sg-evm-017_sg_evm_017_unbound_signature_dig.t.sol</code><br>run: <code>forge test --match-contract SgEvm017UnboundSignatureDigestInClaimtreHarness -vvvv</code></p></div>
+</div>
+<p class='note'>skill <code>skills/signature-replay/SKILL.md</code> checklist satisfied:</p><ul><li>The digest commits to the verifying context: EIP-712 domain separator with `name`,</li></ul>
+</details>
+<details id='SG-EVM-018'><summary><span class='badge high'>high</span> <span>Stranded funds: recoverTokens() is gated on `pendingAdmin`, which is never assigned</span> <span class='loc'>solidity/HyperVault.sol:109 (recoverTokens)</span> <span class='note'>conf 0.80 &middot; SF-001 &middot; hyperevm</span></summary>
+<p>`pendingAdmin` is declared as a storage address and used as the only authorisation for recoverTokens(), but nothing in this contract ever assigns it. It is therefore zero (`address(0)`), and no caller can ever satisfy the check. The function is dead code, which means value that only this path can move - ETH and tokens held by the contract - is permanently stranded.</p>
+<pre>require(msg.sender == pendingAdmin, &quot;hyprivault: not pending admin&quot;);</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>No attacker required: send value to the contract (or let it accumulate) and the recovery path can never be executed.</li><li>If the gate is `msg.sender == address(0)`, the check can even be satisfied by a crafted creation flow, turning dead code into an open door.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Assign the variable in the constructor or an initialiser, or delete the path.</li><li>Add a test asserting the recovery function is callable by the intended role.</li><li>Prefer AccessControl roles with `grantRole` at deploy time over bare address variables.</li></ul><p class='note'>PoC stub: <code>pocs/sg-evm-018_sg_evm_018_stranded_funds_recove.t.sol</code><br>run: <code>forge test --match-contract SgEvm018StrandedFundsRecovertokensIsGateHarness -vvvv</code></p></div>
+</div>
+<p class='note'>skill <code>skills/fund-recovery/SKILL.md</code> checklist satisfied:</p><ul><li>Token recovery uses `SafeERC20` and checks the return data - a rescue that silently fails is</li></ul>
+</details>
+<details id='SG-EVM-019'><summary><span class='badge high'>high</span> <span>Missing access control on refundPending()</span> <span class='loc'>solidity/Vault.sol:106 (refundPending)</span> <span class='note'>conf 0.75 &middot; AC-001 &middot; evm</span></summary>
+<p>refundPending() is public, moves value to `user`, and writes owed, yet nothing in the function proves who the caller is: no `only*` modifier, no `require(msg.sender == ...)`, no role check, and no caller-scoped accounting. So the state it touches is not limited to the caller&#x27;s own balance - any address can call it. The destination is a named user, so the direct risk is griefing/replay of that user&#x27;s claim rather than an empty contract.</p>
+<pre>function refundPending(address user) public returns (uint256 paid) {</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Call refundPending() from an EOA you control, with the arguments you want.</li><li>No key compromise or front-running is required - the entry point is permissionless.</li><li>Repeat until the shared balance is gone (or until every victim&#x27;s claim has been consumed).</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Add `onlyOwner` / AccessControl `onlyRole(GUARDIAN_ROLE)` to refundPending().</li><li>Or make the function self-service: derive the destination from `msg.sender` and let users pull their own funds.</li><li>Emit an event and add a per-call cap so a wrong grant of authority is bounded.</li></ul><p class='note'>PoC stub: <code>pocs/sg-evm-019_sg_evm_019_missing_access_contro.t.sol</code><br>run: <code>forge test --match-contract SgEvm019MissingAccessControlOnRefundpendHarness -vvvv</code></p></div>
+</div>
+<p class='note'>skill <code>skills/access-control/SKILL.md</code> checklist satisfied:</p><ul><li>Each privileged function has either a modifier (`onlyOwner`, `onlyRole`, `onlyAdmin`)</li><li>Build the list of externally callable functions and mark which ones mutate privileged state.</li></ul>
+</details>
+<details id='SG-SOL-015'><summary><span class='badge high'>high</span> <span>SPL token balance edited directly on `vault_token_account` instead of via CPI</span> <span class='loc'>solana/vault/programs/vault/src/lib.rs:68 (slash)</span> <span class='note'>conf 0.70 &middot; CPI-003 &middot; solana</span></summary>
+<p>slash() writes `ctx.accounts.vault_token_account.amount` directly. An SPL token account is owned by the token program, so a well-behaved runtime will reject the mutation; where the owner check is weak (or the account was passed as a raw/duplicated account) the balance can be forged inside the transaction, letting an attacker mint purchasing power without moving tokens.</p>
+<pre>ctx.accounts.vault_token_account.amount += shares;</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Pass an account the handler treats as the vault token account.</li><li>Direct mutation path (or a CPI on an unvalidated program) inflates `amount`.</li><li>Withdraw/settle logic trusts `amount` and releases real tokens.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Move balances with `token::transfer` / `token::mint_to` CPIs signed by the vault PDA.</li><li>Keep program-owned state in your own accounts, never in foreign-owned layouts.</li></ul><p class='note'>PoC stub: <code>pocs/sg-sol-015_sg_sol_015_spl_token_balance_edi.rs</code><br>run: <code>cargo test --features test-suites sg_sol_015_spl_token_balance_edited_directly_on_</code></p></div>
+</div>
+<p class='note'>skill <code>skills/solana-cpi/SKILL.md</code> checklist satisfied:</p><ul><li>Every CPI result is propagated (`?`) or explicitly handled; a dropped `Result` means the</li></ul>
+</details>
+<details id='SG-SOL-016'><summary><span class='badge medium'>medium</span> <span>Division by `vault.total_deposits` with no zero guard in deposit()</span> <span class='loc'>solana/vault/programs/vault/src/lib.rs:31 (deposit)</span> <span class='note'>conf 0.80 &middot; MATH-003 &middot; solana</span></summary>
+<p>deposit() divides by `vault.total_deposits`, which is program state that can legitimately be zero (a fresh vault). On Solana an integer division by zero panics the builtin, the transaction fails with an opaque error, and the first depositor can never complete the flow - an availability bug rather than a theft, but it blocks the account&#x27;s own happy path.</p>
+<pre>let shares = (amount / vault.total_deposits) * 1_000_000_000; // precision loss</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Call the handler while the divisor is zero (empty vault) to force the panic.</li><li>If the zero branch is also how shares are seeded, the whole feature is unusable.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Special-case the empty pool: `let shares = if total == 0 { amount } else { ... };`</li><li>`checked_div(...).ok_or(VaultError::DivideByZero)?` so the failure is a typed error.</li></ul><p class='note'>PoC stub: <code>pocs/sg-sol-016_sg_sol_016_division_by_vault_tot.rs</code><br>run: <code>cargo test --features test-suites sg_sol_016_division_by_vault_total_deposits_with</code></p></div>
+</div>
+<p class='note'>skill <code>skills/solana-math/SKILL.md</code> checklist satisfied:</p><ul><li>Divisors can never be zero: the empty-vault case is special-cased or guarded with</li></ul>
+</details>
+<details id='SG-SOL-017'><summary><span class='badge medium'>medium</span> <span>`remaining_accounts` indexed at [0] without a length check</span> <span class='loc'>solana/vault/programs/vault/src/lib.rs:105 (settle_many)</span> <span class='note'>conf 0.75 &middot; REMOT-001 &middot; solana</span></summary>
+<p>settle_many() reads `remaining_accounts[0]` from `ctx.remaining_accounts` before checking how many accounts the client actually sent. A short account list panics on the slice index (an uncaught panic in the handler, not a clean program error), and any validation that *would* have happened afterwards is skipped - note the ordering here: the read precedes the `require!`.</p>
+<pre>let first = &amp;ctx.remaining_accounts[0];</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Send the instruction with fewer remaining accounts than expected.</li><li>The program panics on the index; clients see an opaque failure (DoS of that path).</li><li>Or rely on the missing validation to slip a wrong-role account into position.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>`ensure!(ctx.remaining_accounts.len() &gt;= 2, VaultError::NotEnoughAccounts);` before indexing.</li><li>Iterate with `.iter().next().ok_or(...)` so absence becomes a typed error.</li><li>Validate each remaining account&#x27;s owner/mint - they are outside Anchor&#x27;s checks.</li></ul><p class='note'>PoC stub: <code>pocs/sg-sol-017_sg_sol_017_remaining_accounts_in.rs</code><br>run: <code>cargo test --features test-suites sg_sol_017_remaining_accounts_indexed_at_0_witho</code></p></div>
+</div>
+<p class='note'>skill <code>skills/solana-cpi/SKILL.md</code> checklist satisfied:</p><ul><li>`remaining_accounts` lengths are validated before they are used as CPI accounts.</li></ul>
+</details>
+<details id='SG-SOL-018'><summary><span class='badge medium'>medium</span> <span>PDA seeds constraint trusts a client-supplied bump</span> <span class='loc'>solana/vault/programs/vault/src/lib.rs:149</span> <span class='note'>conf 0.75 &middot; ACCT-003 &middot; solana</span></summary>
+<p>The account constraint uses `bump = vault_config.bump`, and that stored bump was written from an instruction argument in `initialize`. Anchor will therefore accept *any* bump the client first persisted, so the seeds constraint stops pinning the address to a single canonical PDA. Bump values are part of the address derivation: letting the client choose them is a validation gap.</p>
+<pre>#[account(mut, seeds = [b&quot;vault&quot;, vault_config.key().as_ref()], bump = vault_config.bump)]</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Call `initialize` with a bump that still satisfies the (weak) derivation and store it.</li><li>Reuse that stored bump later to make a seeds check accept a non-canonical address.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Derive the bump: `bump` (Anchor verifies) or `let (,_ ,bump) = Pubkey::find_program_address(...)`.</li><li>Store the *derived* bump, never the client&#x27;s.</li></ul><p class='note'>PoC stub: <code>pocs/sg-sol-018_sg_sol_018_pda_seeds_constraint_.rs</code><br>run: <code>cargo test --features test-suites sg_sol_018_pda_seeds_constraint_trusts_a_client_</code></p></div>
+</div>
+<p class='note'>skill <code>skills/solana-account-validation/SKILL.md</code> checklist satisfied:</p><ul><li>PDAs are derived, not trusted: `seeds` + `bump` verified by Anchor, or</li></ul>
+</details>
+<details id='SG-SOL-019'><summary><span class='badge medium'>medium</span> <span>PDA seeds constraint trusts a client-supplied bump</span> <span class='loc'>solana/vault/programs/vault/src/lib.rs:169</span> <span class='note'>conf 0.75 &middot; ACCT-003 &middot; solana</span></summary>
+<p>The account constraint uses `bump = vault_config.bump`, and that stored bump was written from an instruction argument in `initialize`. Anchor will therefore accept *any* bump the client first persisted, so the seeds constraint stops pinning the address to a single canonical PDA. Bump values are part of the address derivation: letting the client choose them is a validation gap.</p>
+<pre>#[account(mut, seeds = [b&quot;vault&quot;, vault_config.key().as_ref()], bump = vault_config.bump, realloc = 8, realloc::payer = vault_config, realloc::zero = false)]</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Call `initialize` with a bump that still satisfies the (weak) derivation and store it.</li><li>Reuse that stored bump later to make a seeds check accept a non-canonical address.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Derive the bump: `bump` (Anchor verifies) or `let (,_ ,bump) = Pubkey::find_program_address(...)`.</li><li>Store the *derived* bump, never the client&#x27;s.</li></ul><p class='note'>PoC stub: <code>pocs/sg-sol-019_sg_sol_019_pda_seeds_constraint_.rs</code><br>run: <code>cargo test --features test-suites sg_sol_019_pda_seeds_constraint_trusts_a_client_</code></p></div>
+</div>
+<p class='note'>skill <code>skills/solana-account-validation/SKILL.md</code> checklist satisfied:</p><ul><li>PDAs are derived, not trusted: `seeds` + `bump` verified by Anchor, or</li></ul>
+</details>
+<details id='SG-SOL-020'><summary><span class='badge medium'>medium</span> <span>PDA authority depends on a client-supplied `bump` in initialize()</span> <span class='loc'>solana/vault/programs/vault/src/lib.rs:17 (initialize)</span> <span class='note'>conf 0.70 &middot; AUTH-001 &middot; solana</span></summary>
+<p>initialize() takes `bump: u8` straight from the instruction and stores it, and other handlers then use that stored value as their seeds constraint (`bump = config.bump`). A PDA is only canonical when the bump is derived with `find_program_address`; storing the caller&#x27;s number means the first writer decides how authority is derived. Even where `init` seeds constrain this particular deployment, the pattern is how upgrade/freeze/mint authority bugs hide.</p>
+<pre>pub fn initialize(ctx: Context&lt;Initialize&gt;, bump: u8, limiter: u64) -&gt; Result&lt;()&gt; {</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>If the PDA is not uniquely constrained at init, pick a bump that makes a *different* address satisfy the seeds check.</li><li>Then present an account derived from that alternative bump to handlers trusting the stored value.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Drop the parameter and let Anchor verify the bump (`seeds = [...], bump`).</li><li>Or derive it: `let (_pda, bump) = Pubkey::find_program_address(&amp;[b&quot;vault&quot;, authority.as_ref()], &amp;id());`</li><li>If a bump must be stored, assert it equals the derived value on every read.</li></ul><p class='note'>PoC stub: <code>pocs/sg-sol-020_sg_sol_020_pda_authority_depends.rs</code><br>run: <code>cargo test --features test-suites sg_sol_020_pda_authority_depends_on_a_client_sup</code></p></div>
+</div>
+<p class='note'>skill <code>skills/solana-account-validation/SKILL.md</code> checklist satisfied:</p><ul><li>PDAs are derived, not trusted: `seeds` + `bump` verified by Anchor, or</li><li>SPL accounts assert `owner == token_program`, the right `mint`, and the expected authority</li></ul>
+</details>
+<details id='SG-EVM-020'><summary><span class='badge medium'>medium</span> <span>No signature expiry in claimTreasuryGrant()</span> <span class='loc'>solidity/HyperVault.sol:87 (claimTreasuryGrant)</span> <span class='note'>conf 0.70 &middot; SR-003 &middot; hyperevm</span></summary>
+<p>claimTreasuryGrant() accepts a signature with no deadline and no expiry check. A signer&#x27;s intent is usually time-bounded - rates, collateral ratios and allowances change - so a signature that was reasonable on the day it was signed can be catastrophic months later, and a leaked offline payload never expires.</p>
+<pre>function claimTreasuryGrant(bytes32 doc, uint8 v, bytes32 r, bytes32 s, uint256 amount) external {</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Collect signed payloads when conditions are favourable.</li><li>Hold them until prices/limits move in your favour, then submit.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Put `uint256 deadline` in the signed payload and `require(block.timestamp &lt;= deadline, &quot;expired&quot;)`.</li><li>Keep the default TTL short (minutes to hours) and document it for signers.</li></ul><p class='note'>PoC stub: <code>pocs/sg-evm-020_sg_evm_020_no_signature_expiry_i.t.sol</code><br>run: <code>forge test --match-contract SgEvm020NoSignatureExpiryInClaimtreasuryHarness -vvvv</code></p></div>
+</div>
+<p class='note'>skill <code>skills/signature-replay/SKILL.md</code> checklist satisfied:</p><ul><li>A `deadline` is part of the signed payload and is enforced against `block.timestamp`.</li></ul>
+</details>
+<details id='SG-EVM-021'><summary><span class='badge medium'>medium</span> <span>Token recovery result is never checked in recoverTokens()</span> <span class='loc'>solidity/HyperVault.sol:110 (recoverTokens)</span> <span class='note'>conf 0.70 &middot; SF-003 &middot; hyperevm</span></summary>
+<p>The recovery path does a low-level `token.call(...)` and then discards the boolean (the code shape here is `(bool ok, ) = ...; ok;`). A non-standard or pausable token that returns false makes the caller believe the rescue succeeded, so a failed recovery looks like a completed one.</p>
+<pre>(bool ok, ) = token.call(abi.encodeWithSelector(0xa9059cbb, to, amount));</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Choose a token that returns false instead of reverting (USDT-style) or that is paused.</li><li>The recovery call reports success while nothing moved.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>`require(ok &amp;&amp; (abi.decode(ret, (bool)) ), &quot;transfer failed&quot;)` or use SafeERC20.safeTransfer.</li><li>Revert on any zero-length return data as well.</li></ul><p class='note'>PoC stub: <code>pocs/sg-evm-021_sg_evm_021_token_recovery_result.t.sol</code><br>run: <code>forge test --match-contract SgEvm021TokenRecoveryResultIsNeverCheckeHarness -vvvv</code></p></div>
+</div>
+<p class='note'>skill <code>skills/fund-recovery/SKILL.md</code> checklist satisfied:</p><ul><li>Token recovery uses `SafeERC20` and checks the return data - a rescue that silently fails is</li></ul>
+</details>
+<details id='SG-SOL-021'><summary><span class='badge medium'>medium</span> <span>Authority account `user_authority` is used by withdraw() with no signer and no binding</span> <span class='loc'>solana/vault/programs/vault/src/lib.rs:174 (withdraw)</span> <span class='note'>conf 0.65 &middot; AUTH-003 &middot; solana</span></summary>
+<p>`user_authority` in `Withdraw` reads like an authority (AccountInfo&lt;info&gt;) but is not a `Signer`, is not tied by `has_one`/`constraint`/`seeds`, and withdraw() still consumes it. Any mint / freeze / close authority check the program assumes happens here is really happening on an account the client chose. The privilege exists; nothing in the source limits who exercises it.</p>
+<pre>pub user_authority: AccountInfo&lt;&#x27;info&gt;,</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Supply a different key in the `user_authority` slot (or reuse an account you own that matches the shape).</li><li>Pair it with the missing-signer path in the same handler to complete the authority chain.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>`Signer&lt;&#x27;info&gt;` plus `#[account(constraint = user_authority.key() == expected_authority)]`.</li><li>Read SPL authorities from the mint/account data instead of from an unvalidated account.</li><li>Use a two-step authority handover so a single bad call cannot transfer ownership.</li></ul><p class='note'>PoC stub: <code>pocs/sg-sol-021_sg_sol_021_authority_account_use.rs</code><br>run: <code>cargo test --features test-suites sg_sol_021_authority_account_user_authority_is_u</code></p></div>
+</div>
+<p class='note'>skill <code>skills/solana-account-validation/SKILL.md</code> checklist satisfied:</p><ul><li>SPL accounts assert `owner == token_program`, the right `mint`, and the expected authority</li><li>Every account that authorises a privileged action is typed `Signer&lt;&#x27;info&gt;` (or its</li></ul>
+</details>
+<details id='SG-EVM-022'><summary><span class='badge medium'>medium</span> <span>Single-source price oracle.spotPrice() decides value in priceOf()</span> <span class='loc'>solidity/HyperVault.sol:74 (priceOf)</span> <span class='note'>conf 0.65 &middot; OR-003 &middot; hyperevm</span></summary>
+<p>priceOf() trusts one oracle call (oracle.spotPrice) for a value-deciding calculation, with no deviation check, no second source and no circuit breaker.On HyperEVM the HyperCore spot read is itself a consensus input, so treat unit/exponent mismatches and asset-alias confusion as the realistic failure mode. If that single print is wrong - manipulated, stale, or a different asset&#x27;s unit - every dependent decision is wrong in the same direction.</p>
+<pre>return oracle.spotPrice(asset);</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Identify the oracle&#x27;s own trust path (a small set of attesters, a single pair, a low-liquidity venue).</li><li>Move or misreport that one input.</li><li>Call the value-deciding entry point while the whole system believes the bad number.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Cross-check a second independent source and revert if they differ by more than a threshold.</li><li>Validate the returned exponent/units before using the number.</li><li>Add a per-block max-move (circuit breaker) and an explicit pause role.</li></ul><p class='note'>PoC stub: <code>pocs/sg-evm-022_sg_evm_022_single_source_price_o.t.sol</code><br>run: <code>forge test --match-contract SgEvm022SingleSourcePriceOracleSpotpriceHarness -vvvv</code></p></div>
+</div>
+<p class='note'>skill <code>skills/oracle-price/SKILL.md</code> checklist satisfied:</p><ul><li>A second, independent source or a max-deviation circuit breaker exists for anything that</li><li>Units/exponents are asserted (1e8 Chainlink vs 1e18 pool decimals vs HyperCore asset</li></ul>
+</details>
+<details id='SG-SOL-022'><summary><span class='badge medium'>medium</span> <span>Unchecked arithmetic on `shares` in deposit()</span> <span class='loc'>solana/vault/programs/vault/src/lib.rs:33 (deposit)</span> <span class='note'>conf 0.60 &middot; MATH-002 &middot; solana</span></summary>
+<p>deposit() assigns `ctx.accounts.user_vault.shares = ctx.accounts.user_vault.shares + shares` from an arithmetic expression with no `checked_*`/`Saturating` wrapper. Token amounts are `u64`; in an anchor build with overflow checks on, an overflow panics the instruction (DoS of the account), and anywhere the checks are off - or the value is derived from a cast - it wraps around and produces a tiny or absurd balance.</p>
+<pre>ctx.accounts.user_vault.shares = ctx.accounts.user_vault.shares + shares;</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Feed an amount near u64::MAX (multi-token deposits, or a manipulated `limiter` multiplier).</li><li>The accumulation wraps; your recorded share count becomes attacker-controlled.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>`checked_add`/`checked_mul` with a program error on overflow.</li><li>Bound instruction inputs (`require!(amount &lt; MAX_DEPOSIT, ...)`) before arithmetic.</li><li>Cast through `u128` for intermediates.</li></ul><p class='note'>PoC stub: <code>pocs/sg-sol-022_sg_sol_022_unchecked_arithmetic_.rs</code><br>run: <code>cargo test --features test-suites sg_sol_022_unchecked_arithmetic_on_shares_in_dep</code></p></div>
+</div>
+<p class='note'>skill <code>skills/solana-math/SKILL.md</code> checklist satisfied:</p><ul><li>Arithmetic uses `checked_add/sub/mul/div` or `Saturating`. If the workspace sets</li><li>Intermediates are widened (`u128`) and narrowed only at the end, after bounds checks.</li></ul>
+</details>
+<details id='SG-SOL-023'><summary><span class='badge medium'>medium</span> <span>Unchecked arithmetic on `shares` in withdraw()</span> <span class='loc'>solana/vault/programs/vault/src/lib.rs:55 (withdraw)</span> <span class='note'>conf 0.60 &middot; MATH-002 &middot; solana</span></summary>
+<p>withdraw() assigns `user_vault.shares = user_vault.shares - amount` from an arithmetic expression with no `checked_*`/`Saturating` wrapper. Token amounts are `u64`; in an anchor build with overflow checks on, an overflow panics the instruction (DoS of the account), and anywhere the checks are off - or the value is derived from a cast - it wraps around and produces a tiny or absurd balance.</p>
+<pre>user_vault.shares = user_vault.shares - amount;</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Feed an amount near u64::MAX (multi-token deposits, or a manipulated `limiter` multiplier).</li><li>The accumulation wraps; your recorded share count becomes attacker-controlled.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>`checked_add`/`checked_mul` with a program error on overflow.</li><li>Bound instruction inputs (`require!(amount &lt; MAX_DEPOSIT, ...)`) before arithmetic.</li><li>Cast through `u128` for intermediates.</li></ul><p class='note'>PoC stub: <code>pocs/sg-sol-023_sg_sol_023_unchecked_arithmetic_.rs</code><br>run: <code>cargo test --features test-suites sg_sol_023_unchecked_arithmetic_on_shares_in_wit</code></p></div>
+</div>
+<p class='note'>skill <code>skills/solana-math/SKILL.md</code> checklist satisfied:</p><ul><li>Arithmetic uses `checked_add/sub/mul/div` or `Saturating`. If the workspace sets</li><li>Intermediates are widened (`u128`) and narrowed only at the end, after bounds checks.</li></ul>
+</details>
+<details id='SG-EVM-023'><summary><span class='badge medium'>medium</span> <span>Raw ecrecover without malleability checks in claimTreasuryGrant()</span> <span class='loc'>solidity/HyperVault.sol:88 (claimTreasuryGrant)</span> <span class='note'>conf 0.60 &middot; SR-004 &middot; hyperevm</span></summary>
+<p>claimTreasuryGrant() calls `ecrecover` directly. Secp256k1 signatures are malleable: (v, r, s) and (v&#x27;, r, n-s) both recover the same address. Without a high-s rejection, and without restricting v to {27,28}, the same authorisation appears as two different hashes, which breaks any de-duplication or replay map keyed on the payload.</p>
+<pre>address signer = ecrecover(doc, v, r, s);</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Take a used signature, flip s to n - s and adjust v.</li><li>If dedupe keys on the raw payload rather than the recovered digest, the second variant passes.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Use OpenZeppelin `ECDSA.tryRecover`/`recover` which enforces low-s and v in {27,28}.</li><li>Key replay maps on the eip-712 digest, not on the submitted bytes.</li></ul><p class='note'>PoC stub: <code>pocs/sg-evm-023_sg_evm_023_raw_ecrecover_without.t.sol</code><br>run: <code>forge test --match-contract SgEvm023RawEcrecoverWithoutMalleabilityCHarness -vvvv</code></p></div>
+</div>
+<p class='note'>skill <code>skills/signature-replay/SKILL.md</code> checklist satisfied:</p><ul><li>Malleability is handled by a library (`ECDSA.recover`/`tryRecover`, enforced low-s,</li></ul>
+</details>
+<details id='SG-SOL-024'><summary><span class='badge low'>low</span> <span>`realloc::payer = vault_config` is not a funded signer in Withdraw</span> <span class='loc'>solana/vault/programs/vault/src/lib.rs:169</span> <span class='note'>conf 0.60 &middot; AUTH-002 &middot; solana</span></summary>
+<p>`Withdraw` resizes an account and charges the rent delta to `vault_config`, which is not declared in this struct. Solana requires the rent payer of a resize to be a writable, funded signer; a PDA or program-owned account cannot pay it, so the resize fails (availability) or - if the slot can be filled by whoever calls - the cost lands on a third party. This is a design note rather than a proof of theft, which is why it is graded low/medium.</p>
+<pre>#[account(mut, seeds = [b&quot;vault&quot;, vault_config.key().as_ref()], bump = vault_config.bump, realloc = 8, realloc::payer = vault_config, realloc::zero = false)]</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Trigger the realloc path repeatedly so the charged account bleeds lamports it never agreed to.</li><li>Or front-run the growth so the rent cost lands on the victim&#x27;s account.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>`#[account(mut)] payer: Signer&lt;&#x27;info&gt;` as `realloc::payer`, verified as the tx fee payer.</li><li>Prefer fixed `space` at init over dynamic realloc in value-critical paths.</li><li>If the PDA must fund growth, fund it explicitly with a signed transfer first.</li></ul><p class='note'>PoC stub: <code>pocs/sg-sol-024_sg_sol_024_realloc_payer_vault_c.rs</code><br>run: <code>cargo test --features test-suites sg_sol_024_realloc_payer_vault_config_is_not_a_f</code></p></div>
+</div>
+<p class='note'>skill <code>skills/solana-account-validation/SKILL.md</code> checklist satisfied:</p><ul><li>SPL accounts assert `owner == token_program`, the right `mint`, and the expected authority</li></ul>
+</details>
+<details id='SG-SOL-025'><summary><span class='badge low'>low</span> <span>Narrowing cast `as u64` on an amount in slash()</span> <span class='loc'>solana/vault/programs/vault/src/lib.rs:67 (slash)</span> <span class='note'>conf 0.50 &middot; MATH-004 &middot; solana</span></summary>
+<p>slash() casts through a narrower integer while computing token amounts. Combined with the multiply/divide ordering above, silent truncation is the second half of the precision bug: the math can be right in `u128` and wrong once cast back.</p>
+<pre>let shares = (report.amount as u64) * vault.limiter;</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>Choose inputs whose intermediate exceeds the target width.</li><li>The truncated value becomes the share/balance the program trusts.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Keep intermediates in `u128` and cast only at the end, after bounds checks.</li><li>Add a unit test around `u64::MAX / 2` sized amounts.</li></ul><p class='note'>PoC stub: <code>pocs/sg-sol-025_sg_sol_025_narrowing_cast_as_u64.rs</code><br>run: <code>cargo test --features test-suites sg_sol_025_narrowing_cast_as_u64_on_an_amount_in</code></p></div>
+</div>
+<p class='note'>skill <code>skills/solana-math/SKILL.md</code> checklist satisfied:</p><ul><li>`as` casts are reviewed for truncation (`u128 as u64`, `i64 as u64`).</li><li>Multiplication happens **before** division; division-first expressions are precision-loss</li></ul>
+</details>
+<details id='SG-EVM-024'><summary><span class='badge low'>low</span> <span>Native `.transfer()` gas-stipend transfer in claimTreasuryGrant()</span> <span class='loc'>solidity/HyperVault.sol:90 (claimTreasuryGrant)</span> <span class='note'>conf 0.50 &middot; EC-003 &middot; hyperevm</span></summary>
+<p>claimTreasuryGrant() forwards value with `.transfer/send()`, which forwards exactly 2300 gas. That is enough for a plain wallet but not for most smart-contract recipients, so payments to contracts (multisigs, other vaults, account-abstraction wallets) fail - and on HyperEVM the stipend assumption has changed more than once. Reported as low because it is availability, not theft.</p>
+<pre>payable(msg.sender).transfer(amount);</pre>
+<div class='grid'>
+<div><b>Exploit sketch (educational)</b><ol><li>No attacker needed: legitimate users with contract wallets simply cannot be paid.</li><li>If the result is unchecked, the contract marks the payout as done anyway.</li></ol></div>
+<div><b>Patch sketch</b><ul><li>Prefer withdrawal patterns the user triggers, with `Address.sendValue` + checked result.</li><li>Never assume 2300 gas is enough for every recipient.</li></ul><p class='note'>PoC stub: <code>pocs/sg-evm-024_sg_evm_024_native_transfer_gas_s.t.sol</code><br>run: <code>forge test --match-contract SgEvm024NativeTransferGasStipendTransferHarness -vvvv</code></p></div>
+</div>
+<p class='note'>skill <code>skills/external-calls/SKILL.md</code> checklist satisfied:</p><ul><li>The 2300-gas stipend of `send`/`transfer` is acceptable for every plausible recipient</li></ul>
+</details>
+<p class='note'>Heuristic static analysis: findings below 0.6 confidence are review prompts, not verdicts. PoC files are commented skeletons against synthetic samples; no live exploit code is emitted.</p>
+</main><footer>SolGuardian &middot; Jason Parser Research &middot; built with IBM Bob 2.0 &middot; <a href='https://github.com/jamesparser/solguardian'>source</a></footer>
+</body></html>
