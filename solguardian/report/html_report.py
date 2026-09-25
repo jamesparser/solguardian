@@ -68,7 +68,28 @@ def build(result: ScanResult, scorecard: Optional[Scorecard] = None, target_arg:
     if scorecard is not None:
         out.append("<div class='kpi'><b>%.0f%%</b><small>seeded recall (%d/%d)</small></div>"
                    % (100 * scorecard.recall, len(scorecard.caught), len(scorecard.seeded)))
+    corroborated = sum(1 for f in findings if f.corroborated_by)
+    if corroborated:
+        out.append("<div class='kpi'><b>%d</b><small>corroborated by a 2nd detector</small></div>"
+                   % corroborated)
+    agents = getattr(result, "agents", []) or []
+    if agents:
+        out.append("<div class='kpi'><b>%d</b><small>agent runs (%d sharded hunters)</small></div>"
+                   % (len(agents), len([a for a in agents if "hunter" in a.agent])))
     out.append("</div>")
+
+    if agents:
+        out.append("<h3>Agent pipeline</h3><table><tr><th>agent</th><th>role</th>"
+                   "<th>files</th><th>findings</th><th>ms</th></tr>")
+        for a in agents:
+            role = ("scan shard (parallel)" if "hunter" in a.agent
+                    else "cross-check / corroboration" if a.agent == "adjudicator"
+                    else "output-contract gate")
+            out.append("<tr><td><code>%s</code></td><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>"
+                       % (esc(a.agent), role, a.files_scanned or "-",
+                          len(a.findings) if a.findings else "-", a.duration_ms))
+        out.append("</table><p class='note'>The adjudicator records where independent detectors "
+                   "agree; it is annotation-only and cannot change a severity or confidence.</p>")
 
     if scorecard is not None:
         out.append("<h3>Ground truth</h3><table><tr><th>seeded issue</th><th>caught</th><th>rule</th>"
@@ -100,6 +121,12 @@ def build(result: ScanResult, scorecard: Optional[Scorecard] = None, target_arg:
                    % (esc(f.id), f.severity.value, f.severity.value, esc(f.title), esc(f.location),
                       f.confidence, esc(f.rule), esc(f.chain or "-")))
         out.append("<p>%s</p>" % esc(f.description).replace("\n", "<br>"))
+        if f.corroborated_by:
+            out.append("<p class='note'>corroborated independently by %d other detector(s), "
+                       "%d rule(s): %s <span class='note'>(annotation only &mdash; does not "
+                       "change this grade)</span></p>"
+                       % (f.independent_confirmation, len(f.corroborated_by),
+                          ", ".join("<code>%s</code>" % esc(c) for c in f.corroborated_by)))
         out.append("<pre>%s</pre>" % esc(f.evidence or "(see location)"))
         out.append("<div class='grid'>")
         out.append("<div><b>Exploit sketch (educational)</b><ol>%s</ol></div>"
@@ -116,7 +143,9 @@ def build(result: ScanResult, scorecard: Optional[Scorecard] = None, target_arg:
 
     out.append("<p class='note'>Heuristic static analysis: findings below 0.6 confidence are review "
                "prompts, not verdicts. PoC files are commented skeletons against synthetic samples; "
-               "no live exploit code is emitted.</p>")
+               "no live exploit code is emitted. The adjudicator records detector agreement but is "
+               "annotation-only: it never raises a severity or a confidence, and sites where "
+               "detectors disagree stay as separate findings rather than being averaged.</p>")
     out.append("</main><footer>SolGuardian &middot; Jason Parser Research &middot; built with IBM Bob 2.0 "
                "&middot; <a href='https://github.com/jamesparser/solguardian'>source</a></footer>")
     out.append("</body></html>")

@@ -59,10 +59,12 @@ def cmd_analyze(args: argparse.Namespace) -> int:
         result: ScanResult = scan(target)
         agents = None
     else:
-        summary = run_pipeline(target, parallel=True, verbose=not args.quiet)
-        result = ScanResult(target=target, findings=summary.findings,
-                            detectors_run=[d.id for d in all_detectors()],
-                            duration_ms=summary.duration_ms)
+        # The CLI runs under a __main__ guard, so `auto` may upgrade to processes on a big repo;
+        # library callers keep the conservative, always-safe thread default (agents/pool.py).
+        summary = run_pipeline(target, parallel=True, verbose=not args.quiet,
+                               workers=args.workers, backend=args.backend,
+                               allow_processes=True)
+        result = summary.scan_result()
         agents = summary.agents
 
     card = None
@@ -130,6 +132,17 @@ def _short(text: str) -> str:
 
 
 def cmd_list(args: argparse.Namespace) -> int:
+    from .agents.adjudicator import Adjudicator
+    from .agents.evm_hunter import EvmHunter
+    from .agents.report_writer import ReportWriter
+    from .agents.solana_hunter import SolanaHunter
+
+    print("agents (the orchestrator fans each hunter out over the files, one worker per shard):")
+    for cls in (EvmHunter, SolanaHunter, Adjudicator, ReportWriter):
+        ids = ", ".join(getattr(cls, "detector_ids", []) or []) or "-"
+        print("  %-16s %-9s %s" % (cls.name, cls.language, ids))
+    print("")
+    print("detectors:")
     for detector in all_detectors():
         print("%-22s %-9s %-52s skills/%s" % (detector.id, detector.language, detector.label, detector.skill))
     print("")
@@ -148,6 +161,8 @@ def cmd_demo(args: argparse.Namespace) -> int:
         html=args.html,
         quiet=False,
         serial=False,
+        workers=None,
+        backend="auto",
         expect=None,
         no_expect=False,
         fail_on=None if args.allow_findings else "critical",
@@ -176,6 +191,11 @@ def build_parser() -> argparse.ArgumentParser:
     analyze.add_argument("--html", action="store_true", help="also emit a static report.html")
     analyze.add_argument("--quiet", action="store_true", help="no console table")
     analyze.add_argument("--serial", action="store_true", help="skip the parallel agent pipeline")
+    analyze.add_argument("--workers", type=int, default=None, metavar="N",
+                        help="parallel agent instances (default: auto = min(files, CPUs))")
+    analyze.add_argument("--backend", choices=("auto", "threads", "processes"), default="auto",
+                        help="how shards run: threads (default) or processes (faster on large "
+                             "repos; requires a __main__ guard when driven from Python)")
     analyze.add_argument("--expect", help="path to EXPECTED_FINDINGS.json (ground truth)")
     analyze.add_argument("--no-expect", action="store_true", help="disable ground-truth scoring")
     analyze.add_argument("--fail-on", choices=[s.value for s in Severity.ordered()],

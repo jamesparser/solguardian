@@ -33,8 +33,17 @@ def build(result: ScanResult, scorecard: Optional[Scorecard] = None, agents=None
             "by_severity": {s.value: sum(1 for f in findings if f.severity is s) for s in _severities()},
             "by_chain": _chain_counts(findings),
             "by_detector": _detector_counts(findings),
+            "corroborated": sum(1 for f in findings if f.corroborated_by),
         },
         "findings": [f.to_dict() for f in findings],
+        "orchestration": {
+            "model": "parallel specialist agents -> adjudicator -> report writer",
+            "workers": getattr(result, "workers", 1) or 1,
+            "agent_runs": [a.to_dict() for a in (getattr(result, "agents", []) or [])] or None,
+            "corroborated_findings": sum(1 for f in findings if f.corroborated_by),
+            "note": ("hunters are sharded by file and run concurrently; the adjudicator only "
+                     "annotates corroboration and never changes a grade"),
+        },
     }
     if scorecard is not None:
         payload["demo_metrics"] = scorecard.to_dict()

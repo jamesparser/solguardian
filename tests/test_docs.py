@@ -249,6 +249,17 @@ class TestToolingScripts(unittest.TestCase):
                 doc = yaml.safe_load(read(*rel.split("/")))
                 self.assertTrue(doc.get("jobs"), "%s declares no jobs" % rel)
 
+    def test_documented_test_count_is_true(self) -> None:
+        """README carries an explicit `<!-- solguardian-tests: N -->` marker; it must equal the
+        real suite size. Prose numbers rot silently, so the marker is the contract."""
+        real = unittest.TestLoader().discover(
+            os.path.join(ROOT, "tests"), pattern="test_*.py").countTestCases()
+        markers = re.findall(r"<!--\s*solguardian-tests:\s*(\d+)\s*-->",
+                             read("README.md") + read("docs", "SLIDES.md"))
+        self.assertTrue(markers, "no solguardian-tests marker found in the docs")
+        self.assertEqual(set(markers), {str(real)},
+                         "docs claim %s tests, the suite has %d" % (sorted(set(markers)), real))
+
     def test_helper_scripts_compile(self) -> None:
         import py_compile
 
