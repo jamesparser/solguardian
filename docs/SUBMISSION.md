@@ -15,24 +15,36 @@ Everything below is copy-paste ready except the four items marked **YOU**.
 | repo docs | ✅ README, AGENTS, BUILD, DATA_SOURCES, STATEMENTS, samples/README |
 | demo artefacts | ✅ `demo/` (report.json/md/html + 49 PoC stubs), `docs/cover.png`, slides, video script |
 | CI + Pages | ✅ workflows committed — **YOU**: enable Pages once (below) |
-| 16 commits pushed to `jamesparser/solguardian` | ❌ **blocked** — see A1 |
+| 21 commits pushed to `jamesparser/solguardian` | ❌ **blocked** — see A (auth, not code) |
 | `bob_sessions/*.png` | ❌ **YOU** — must be captured inside Bob IDE (below) |
 | lablab form + video upload | ❌ **YOU** — needs your lablab account |
 
-## A. Unblock the push (one action)
+## A. Unblock the push (one action — it is auth, not code)
 
-The GitHub credential on this machine authenticates as `node0datasystems-lgtm`, which currently
-has **pull-only** on `jamesparser/solguardian` (`permissions.push: false`), so `git push` returns
-403. Pick one:
+**This build machine has no `jamesparser` credential.** Both HTTPS entries in `~/.git-credentials`
+and all seven SSH keys authenticate as `node0datasystems-lgtm`, which has pull-only on this repo
+(`permissions.push: false`), so `git push` returns 403. The repository state is fine — the remote is
+already `jamesparser/solguardian`, the working tree is clean, and all 21 commits are **authored and
+committed as Jason Parser `<330036968+jamesparser@users.noreply.github.com>`** (repo-local identity;
+your global `~/.gitconfig` was left untouched).
 
-1. **Grant write** — github.com/jamesparser/solguardian → Settings → Collaborators → Add
-   `node0datasystems-lgtm` (Write). Then I run `git push origin main`.
-2. **Give me a push-capable token** for `jamesparser` and I'll push with it.
-3. **Push it yourself** — everything is committed locally in
-   `/Users/terminal/solguardian-work/solguardian` (16 commits, working tree clean):
+Pick whichever is least annoying:
+
+1. **Give the build a `jamesparser` identity** (cleanest — the repo is yours). A fine-grained PAT
+   with Contents:Read+Write on this one repo, or sign a `jamesparser` account into this machine,
+   and I push immediately.
+2. **Add the machine account as a Write collaborator** — github.com/jamesparser/solguardian →
+   Settings → Collaborators → Add `node0datasystems-lgtm` (Write), then I run the push. The commits
+   still read as authored by Jason Parser; only the *pusher* would be node0.
+3. **Push it yourself** — nothing is needed from me:
    ```bash
    cd /Users/terminal/solguardian-work/solguardian && git push origin main
    ```
+   (If you want the authorship check first: `git log origin/main..HEAD --format='%an' | sort -u`
+   should print exactly `Jason Parser`.)
+
+Backup copy of the same 21 commits: `/Users/terminal/solguardian-work/solguardian-main.bundle`
+(`git clone` it, or `git fetch <bundle> main:main`).
 
 Nothing else in this runbook depends on the push except the two links below.
 
