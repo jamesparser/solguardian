@@ -1,0 +1,58 @@
+name: pages (demo report)
+
+# Publishes demo/ to GitHub Pages: a landing page plus the generated SolGuardian report.
+# Regenerating the demo is part of the gate below, so the published page can never drift
+# from the code in the repo.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "solguardian/**"
+      - "samples/**"
+      - "skills/**"
+      - "demo/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e .
+      - name: Regenerate the report from current code
+        run: solguardian analyze samples --out site --html
+      - name: Layer the static landing page over it
+        run: |
+          cp docs/index.html site/index.html
+          cp README.md site/README.md
+          cp -r skills site/skills
+          cp -r samples site/samples
+          sed -i 's#(\.\./#(#g' site/report.md 2>/dev/null || true
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

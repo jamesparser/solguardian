@@ -1,0 +1,91 @@
+name: tests + scan gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: unit tests on ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install (stdlib only - this is just the console script)
+        run: pip install -e .
+      - name: Unit tests
+        run: python3 tests/run_tests.py
+      - name: SolGuardian scan of its own repo (informational)
+        run: solguardian analyze samples --out out/ci-scan --html
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: solguardian-report-${{ matrix.python-version }}
+          path: |
+            out/ci-scan/report.md
+            out/ci-scan/report.json
+            out/ci-scan/report.html
+          if-no-files-found: warn
+
+  ground-truth-gate:
+    name: recall gate (must stay 17/17 on the seed set)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e .
+      - name: Assert every seeded issue is still caught
+        run: python3 - <<'PY'
+        import json, subprocess, sys
+        from solguardian.core.scanner import scan
+        from solguardian.core.scorecard import load_expectations, score
+        from solguardian.core.source import build_target
+        res = scan(build_target("samples"))
+        card = score(res.findings, load_expectations("samples/EXPECTED_FINDINGS.json"))
+        print("caught %d/%d seeded issues (%.0f%%), %d unseeded extras, %d ms"
+              % (len(card.caught), len(card.seeded), 100 * card.recall,
+                 len(card.unseeded), res.duration_ms))
+        if card.recall < 1.0:
+            print("::error::regression - missed: " + ", ".join(m.key for m in card.missed))
+            sys.exit(1)
+        if res.duration_ms > 5000:
+            print("::error::performance regression: %d ms" % res.duration_ms)
+            sys.exit(1)
+        PY
+      - name: The CI gate itself - non-zero exit on critical findings
+        run: |
+          set +e
+          solguardian analyze samples --out out/gate --fail-on critical --quiet
+          code=$?
+          set -e
+          echo "solguardian exit code: $code"
+          if [ "$code" -ne 1 ]; then
+            echo "::error::expected exit 1 on seeded criticals, got $code"; exit 1
+          fi
+
+  secret-scan:
+    name: no secrets committed
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -e .
+      - run: python3 -m unittest tests.test_docs.TestNoSecretsTracked -v
+      - name: Grep for obvious credential shapes
+        run: |
+          ! grep -rInE "(ghp_[A-Za0-9]{36}|github_pat_[A-Za-z0-9_]{40}|-----BEGIN [A-Z ]*PRIVATE KEY-----|mnemonic[\"']?\s*[:=])" \
+            --exclude-dir=.git --exclude-dir=out --exclude-dir=node_modules . \
+            || (echo "::error::credential-shaped string found"; exit 1)
