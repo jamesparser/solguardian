@@ -18,6 +18,9 @@ class ScanResult:
     detectors_run: List[str] = field(default_factory=list)
     duration_ms: int = 0
     per_file: Dict[str, int] = field(default_factory=dict)
+    #: agent runs when the work came from the multi-agent pipeline (empty for serial scan())
+    agents: List[object] = field(default_factory=list)
+    workers: int = 1
 
     @property
     def counts(self) -> Dict[str, int]:
@@ -34,15 +37,25 @@ class ScanResult:
 
 
 def dedupe(findings: List[Finding]) -> List[Finding]:
-    """Collapse same (file, line, rule-family) hits, keeping the most severe."""
+    """Collapse identical (file, line, rule) hits, keeping the strongest.
+
+    Both the collision winner and the final order are decided by a *total* key, never by
+    arrival order. That matters once findings come from several concurrent agents: a stable
+    order is what makes ranked ids (and therefore PoC filenames) reproducible run to run no
+    matter how the work was sharded.
+    """
     buckets: Dict[Tuple[str, int, str], Finding] = {}
     for f in findings:
         key = (f.file, f.line, f.rule)
         current = buckets.get(key)
-        if current is None or f.score > current.score:
+        if current is None or _order_key(f) < _order_key(current):
             buckets[key] = f
-    kept = sorted(buckets.values(), key=lambda x: (-x.score, x.file, x.line))
-    return kept
+    return sorted(buckets.values(), key=_order_key)
+
+
+def _order_key(f: Finding) -> Tuple:
+    """Sort key: score desc, then file/line/rule/detector for a total order."""
+    return (-f.score, f.file, f.line, f.rule, f.detector, f.title)
 
 
 def finalize(findings: List[Finding]) -> List[Finding]:

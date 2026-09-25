@@ -79,6 +79,11 @@ class Finding:
     cwe: str = ""
     tags: List[str] = field(default_factory=list)
     id: str = ""
+    # set by the adjudicator agent after ranking: which *other* detectors independently
+    # flagged the same code. 0/[] unless a second detector agrees - never used to inflate
+    # severity or confidence.
+    corroborated_by: List[str] = field(default_factory=list)
+    independent_confirmation: int = 0
 
     # ------------------------------------------------------------------
     @property
@@ -138,4 +143,6 @@ class Finding:
             "skill_checklist": self.checklist,
             "cwe": self.cwe,
             "tags": self.tags,
+            "corroborated_by": self.corroborated_by,
+            "independent_confirmation": self.independent_confirmation,
         }
