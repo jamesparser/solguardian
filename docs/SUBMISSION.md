@@ -9,7 +9,7 @@ Everything below is copy-paste ready except the four items marked **YOU**.
 | --- | --- |
 | tool (13 detectors, 14 skill packs, CLI, agents, reports) | ✅ done, `python3 -m solguardian analyze samples` |
 | ground truth | ✅ 17/17 seeded issues caught, 0 findings on the written-correct control |
-| tests | ✅ 51 passing, stdlib only (`python3 -m unittest discover -s tests`) |
+| tests | ✅ 55 passing, stdlib only (`python3 -m unittest discover -s tests`) |
 | repo docs | ✅ README, AGENTS, BUILD, DATA_SOURCES, STATEMENTS, samples/README |
 | demo artefacts | ✅ `demo/` (report.json/md/html + 49 PoC stubs), `docs/cover.png`, slides, video script |
 | CI + Pages | ✅ workflows committed — **YOU**: enable Pages once (below) |
@@ -85,7 +85,7 @@ Then `https://jamesparser.github.io/solguardian/` serves the landing page plus t
 
 ```bash
 cd /Users/terminal/solguardian-work/solguardian
-python3 -m unittest discover -s tests          # 51 OK
+python3 -m unittest discover -s tests          # 55 OK
 rm -rf out && python3 -m solguardian analyze samples --out out/samples --html
 python3 -m solguardian analyze samples/clean --out out/clean --quiet   # 0 findings
 solguardian demo --html                        # the exact on-camera command

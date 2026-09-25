@@ -57,7 +57,7 @@ and **one root cause = one finding**, so packs do not pile up on the same line.
 | findings emitted | 49 (16 critical · 18 high · 12 medium · 3 low) |
 | findings on the clean negative control | **0** |
 | PoC stubs | one per finding (Foundry / Anchor skeletons) |
-| tests | 49 passing, stdlib only |
+| tests | 55 passing, stdlib only |
 | network calls / API keys | **0** |
 
 **Honesty slide, in the deck:** heuristics. False positives on unusual-but-correct code; false

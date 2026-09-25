@@ -158,7 +158,7 @@ solguardian/            the package: core (parsers, finding model, skills, scori
                         detectors/, report/, agents/ (EvmHunter, SolanaHunter, ReportWriter)
 skills/                 14 SKILL.md packs - the verified checklists agents and rules enforce
 samples/                synthetic seeded targets + EXPECTED_FINDINGS.json (ground truth)
-tests/                  49 tests: contract, recall, false positives, CLI, docs, secrets
+tests/                  55 tests: contract, recall, false positives, CLI, docs, secrets
 demo/                   committed report for GitHub Pages
 bob_sessions/           required Bob evidence: PNG task summaries + the exact prompts used
 docs/                   submission runbook, video script, slide outline, cover generator

@@ -8,9 +8,17 @@ from __future__ import annotations
 
 import os
 import re
+import subprocess
+import sys
 import unittest
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def _has_yaml() -> bool:
+    import importlib.util
+
+    return importlib.util.find_spec("yaml") is not None
 
 
 def read(*parts: str) -> str:
@@ -160,6 +168,7 @@ class TestRequiredFiles(unittest.TestCase):
         "solguardian/report/templates/anchor_stub.rs",
         "docs/VIDEO_SCRIPT.md", "docs/SLIDES.md", "docs/index.html", "docs/cover.png",
         "docs/SUBMISSION.md", "docs/make_cover.py",
+        "tools/recall_gate.py", "tools/secret_scan.py",
         "demo/report.html", "demo/report.json", "demo/index.html",
         "samples/clean/CleanVault.sol", "samples/clean/clean_vault.rs",
         "tests/test_false_positives.py", "tests/run_tests.py",
@@ -215,14 +224,49 @@ class TestRequiredFiles(unittest.TestCase):
             self.assertNotIn("Compiled with solc", text)
 
 
+class TestToolingScripts(unittest.TestCase):
+    """The helper scripts CI calls must exist, compile and pass on a healthy tree."""
+
+    def test_recall_gate_passes(self) -> None:
+        proc = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "recall_gate.py")],
+                              capture_output=True, text=True, cwd=ROOT)
+        self.assertEqual(proc.returncode, 0, (proc.stdout + proc.stderr)[-900:])
+        self.assertIn("PASS", proc.stdout)
+
+    def test_secret_scan_is_clean(self) -> None:
+        proc = subprocess.run([sys.executable, os.path.join(ROOT, "tools", "secret_scan.py")],
+                              capture_output=True, text=True, cwd=ROOT)
+        self.assertEqual(proc.returncode, 0, (proc.stdout + proc.stderr)[-900:])
+        self.assertIn("clean", proc.stdout)
+
+    @unittest.skipUnless(_has_yaml(), "PyYAML not installed")
+    def test_github_workflows_parse(self) -> None:
+        """A workflow that fails to parse is a silent CI failure (this really happened)."""
+        import yaml
+
+        for rel in (".github/workflows/ci.yml", ".github/workflows/pages.yml"):
+            with self.subTest(workflow=rel):
+                doc = yaml.safe_load(read(*rel.split("/")))
+                self.assertTrue(doc.get("jobs"), "%s declares no jobs" % rel)
+
+    def test_helper_scripts_compile(self) -> None:
+        import py_compile
+
+        for rel in ("tools/recall_gate.py", "tools/secret_scan.py", "docs/make_cover.py",
+                    "tests/run_tests.py"):
+            with self.subTest(script=rel):
+                py_compile.compile(os.path.join(ROOT, *rel.split("/")), doraise=True)
+
+
 class TestNoSecretsTracked(unittest.TestCase):
     # NOTE: the words below also appear legitimately in docs about what must never be
     # committed, and in the hackathon prompt files we were given. Those paths are
     # allowlisted; the credential *shapes* (tokens, keys, rpc urls) are never allowlisted.
     ALLOWLIST_PREFIXES = ("solguardian/detectors/", "solguardian/core/", "tests/", "skills/",
                           "HANDOVER_PROMPT.md", "bob_sessions/", "DATA_SOURCES.md",
-                          "DATA_SOURCE", "AGENTS.md", "README.md", "STATEMENTS.md", "BUILD.md",
-                          "docs/")
+                          "AGENTS.md", "README.md", "STATEMENTS.md", "BUILD.md", "docs/",
+                          # this file *defines* the credential shapes it hunts for
+                          "tools/secret_scan.py")
 
     SECRETISH = re.compile(
         r"(?i)(api[_-]?key|secret[_-]?key|private[_-]?key|seed phrase|password\s*=|"
