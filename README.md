@@ -161,7 +161,7 @@ samples/                synthetic seeded targets + EXPECTED_FINDINGS.json (groun
 tests/                  49 tests: contract, recall, false positives, CLI, docs, secrets
 demo/                   committed report for GitHub Pages
 bob_sessions/           required Bob evidence: PNG task summaries + the exact prompts used
-docs/                   video script, slide outline
+docs/                   submission runbook, video script, slide outline, cover generator
 AGENTS.md               instructions for coding agents working on this repo
 BUILD.md                how to run it, and how IBM Bob built it
 STATEMENTS.md           the two <=500-word submission statements

@@ -159,6 +159,7 @@ class TestRequiredFiles(unittest.TestCase):
         "solguardian/report/templates/foundry_stub.t.sol",
         "solguardian/report/templates/anchor_stub.rs",
         "docs/VIDEO_SCRIPT.md", "docs/SLIDES.md", "docs/index.html", "docs/cover.png",
+        "docs/SUBMISSION.md", "docs/make_cover.py",
         "demo/report.html", "demo/report.json", "demo/index.html",
         "samples/clean/CleanVault.sol", "samples/clean/clean_vault.rs",
         "tests/test_false_positives.py", "tests/run_tests.py",
