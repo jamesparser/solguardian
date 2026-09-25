@@ -1,259 +1,277 @@
-# BUILD PROMPT — hand this whole file to your coding agent
-# Project: SolGuardian · IBM Bob 2.0 Hackathon · Jason Parser Research
-# Coordination agent (MiMo) does NOT implement. You (coding agent) implement.
+# SOLGUARDIAN — BLANK-SLATE BUILD PROMPT
+# Copy everything below the line into your coding agent (or attach this file).
+# Self-contained. No other context required.
 
----
+================================================================================
+# MISSION
+================================================================================
+You are the implementation agent for **SolGuardian**, a hackathon project for the
+**IBM Bob 2.0 Hackathon** (lablab.ai × IBM). Submissions close:
+**Sep 27, 2026 22:00 Bangkok (UTC+7)**. Start now. Demoable end-to-end by
+**Sunday 12:00 Bangkok**. Submit before 22:00.
 
-## 0. Mission
-Build **SolGuardian**: a multi-agent smart-contract exploit hunter for **Solidity (EVM)** and **Solana (Rust/Anchor)** that runs as a real tool, developed and demonstrated **inside IBM Bob IDE** so Bob is clearly a core component (hackathon eligibility).
+**Product:** Automated exploit hunter for smart contracts on
+**Ethereum / EVM (Solidity)**, **Solana (Rust / Anchor)**, and **Hyperliquid**
+(HyperEVM Solidity + related Rust where applicable).
 
-Team brand: **Jason Parser Research**  
-Product name: **SolGuardian** (locked)  
-Tagline: *Automated exploit hunting for Solidity & Solana*
+**Team / brand:** Jason Parser Research  
+**GitHub org user:** `jamesparser`  
+**Repo (use this):** https://github.com/jamesparser/solguardian  
+**Team page:** https://lablab.ai/ai-hackathons/ibm-bob-2-hackathon/jason-parser-research
 
-One-sentence pitch: Point SolGuardian at contract source; parallel agents hunt real exploit classes and emit ranked findings with a minimal PoC stub and a patch sketch.
+**One-line pitch:** Point SolGuardian at contract source; specialized agents hunt
+real exploit classes and emit ranked findings with a minimal PoC stub and a patch sketch.
 
----
+You implement everything. Be decisive. Prefer a working demo over polish.
 
-## 1. Context you need
-- Event: IBM Bob 2.0 Hackathon (lablab.ai × IBM), **Sep 25–27, 2026**, submissions close **Sep 27 22:00 Bangkok (UTC+7)**
-- Working repo: https://github.com/jamesparser/clear-to-ship (RENAME this repo to `solguardian` OR create `jamesparser/solguardian` — preferred name **jamesparser/solguardian**)
-- Team page: https://lablab.ai/ai-hackathons/ibm-bob-2-hackathon/jason-parser-research
-- Official guide: `bob-hackathon/docs/bob2-hackathon-guide.html` (workspace copy)
-- **Bob IDE is required.** Solution must **showcase IBM Bob IDE as a core component**. Optional: Bob Shell, watsonx.
+================================================================================
+# CRITICAL ENVIRONMENT RULES
+================================================================================
+1. **IBM Bob IDE is mandatory** and must be a **core component** of the solution
+   (not optional tooling). Judges disqualify projects that do not showcase Bob.
+   - Bob is IBM's AI coding IDE (chat, Agent mode, subagents, skills, MCP).
+   - You are **not** building a Bob plugin as the product.
+   - You **are** building a real tool **inside Bob**, developed and demoed there.
+   - Portable CLI core must still run outside Bob (useful after the hackathon).
 
-### What Bob is / is not
-- IBM Bob = IBM's AI coding IDE (chat, Agent mode, subagents, skills, MCP) — like Cursor/Claude Code, **not** OpenAI Codex
-- We are **not** building a Bob plugin as the product
-- We **are** building a real tool **with** Bob as the development + demo engine
-- Portable core (CLI/library) must still run outside Bob so the tool is useful after the hackathon
+2. **Bob account / Bobcoins**
+   - Finish IBMid login first (email verification code required to complete signup).
+   - After the hackathon invite email (“added to ibm-hackathon-xxxx”), in Bob IDE:
+     Settings → General → switch instance to **`ibm-coding-challenge-uat`**
+     (region **us-east**). Never burn a personal Bob account.
+   - Only **40 Bobcoins** exist. No top-up. Spend on orchestration/review/skills.
+     Implement detectors as real code so the tool works even if Bob is exhausted.
 
-### Hard eligibility rules
-1. IBM Bob IDE must be **visibly core** (Agent mode, parallel subagents, document understanding, code reviews)
-2. `bob_sessions/` folder in the final public repo — PNG screenshots of **Bob task session consumption summaries**, named e.g. `solguardian_task01_reentrancy_scan_summary.png`. Capture **during the build**, not at the last minute
-3. Clean data only: sample/synthetic contracts + public docs. **No** client data, PI, social scrapes. Keep `DATA_SOURCES.md`
-4. **40 Bobcoins** on the hackathon account — spend carefully; no top-up
-5. Public GitHub repo, MIT, **no secrets** (use `.gitignore` / `.bobignore`)
-6. Original work — **do not** reuse or rebrand BGI `a2a-omega` (different event)
-7. Video ≤3 min with ≥90s live demo + narration showing Bob usage
-8. Two statements ≤500 words: Problem & Solution + IBM Bob Usage
+3. **`bob_sessions/` is a required deliverable**
+   - Folder `bob_sessions/` in the public repo.
+   - PNG screenshots of **Bob task session consumption summaries**.
+   - How: Bob IDE chat → Tasks → open task → click task header → screenshot the
+     session consumption summary.
+   - Name like: `solguardian_task01_evm_detectors_summary.png`
+   - Capture **as you complete each workstream**, never at the last minute.
 
----
+4. **Data rules (strict)**
+   - Synthetic/teaching sample contracts you write + public documentation only.
+   - Forbidden: client data, company confidential data, personal info, social scrapes.
+   - Keep `DATA_SOURCES.md` listing every source you used.
 
-## 2. Product spec (what you build)
+5. **Repo rules**
+   - Public GitHub repo under `jamesparser`. MIT license.
+   - **Never commit secrets** (API keys, mnemonics, RPC keys). Use `.gitignore` + `.bobignore`.
+   - Original work. Do **not** reuse or rebrand any other hackathon project
+     (especially agent-to-agent messaging hubs). This must be a distinct product.
 
-### 2.1 In scope (MVP that demos well)
-A pipeline that takes a **target contract** (Solidity `.sol` and/or Anchor/Rust `.rs`) and produces a **findings report**.
+6. **Submission format (lablab)**
+   - Video **≤3 minutes**, ≥90s live demo with narration, must show Bob in use.
+   - Two written statements, **≤500 words each**:
+     Problem & Solution; IBM Bob Usage.
+   - Public repo link, cover image, slides, demo URL (GitHub Pages OK).
+   - Later: post-hackathon feedback form (needed for participant rewards).
 
-**Detectors (implement as separate analyzers / Bob subagent roles):**
+================================================================================
+# PRODUCT SPEC
+================================================================================
+## In scope (must ship)
+A pipeline: **target source → findings report**.
 
-Solidity / EVM:
-1. Reentrancy (state change after external call)
-2. Access control / missing modifiers / `tx.origin`
-3. Unchecked external call / return value
-4. Delegatecall / proxy misconfig
-5. Oracle / price assumption (spot vs TWAP notes)
-6. Signature / replay / nonce gaps
-7. Dangerous `selfdestruct`, `suicide`, arbitrary send
+### Targets
+A. **Solidity / EVM** (Ethereum, Arbitrum, Base, **HyperEVM / Hyperliquid**, etc.)
+B. **Solana / Anchor (Rust)**
+C. **Hyperliquid-specific notes** on HyperEVM Solidity (same EVM detectors) plus
+   any simple Rust/program pitfalls you can cover without inventing a new chain
+   client. Do not build a Hyperliquid node or indexer.
 
-Solana / Anchor:
-1. Missing signer / owner checks
-2. Account confusion / type cosplay (`Account` vs unchecked)
-3. CPI privilege / missing `has_one` / seeds validation
-4. Integer overflow / precision (if no checked math)
-5. Freeze authority / upgrade authority footguns (static notes)
-6. Unchecked account data deserialization
+### Detectors — EVM / Solidity
+1. Reentrancy (state after external call)
+2. Access control (missing onlyOwner / arbitrary admin / tx.origin)
+3. Unchecked external call return value
+4. Dangerous delegatecall / proxy storage collision notes
+5. Oracle / price assumptions (spot price, single feed)
+6. Signature / replay / nonce / deadline gaps
+7. selfdestruct / arbitrary send / stuck funds notes
 
-**Each finding must include:**
+### Detectors — Solana / Anchor
+1. Missing signer checks
+2. Missing owner / account type checks (account confusion)
+3. CPI / privilege / `has_one` / seeds validation gaps
+4. Integer overflow / precision (unchecked math)
+5. Authority footguns (upgrade / freeze / mint) as static notes
+6. Unsafe deserialization / remaining accounts issues
+
+### Each finding must include
 - id, severity (critical/high/medium/low), confidence
-- title + 2–5 sentence explanation **a human can understand**
-- file:line or function name
-- exploit sketch (step-by-step, not a weapon — educational repro)
-- **PoC stub** (Foundry test skeleton or Anchor test skeleton)
+- short title + 2–5 sentence **human-readable** explanation
+- location: file:line or function
+- exploit sketch (educational steps — not a live weapon against mainnet)
+- **PoC stub** (Foundry test skeleton **or** Anchor/Rust test skeleton)
 - patch sketch (1–6 lines of guidance)
 
-**Outputs:**
-- `report.json` (machine)
+### Outputs
+- `report.json` (machine-readable)
 - `report.md` (human / demo)
-- `pocs/` stubs
-- optional simple static HTML page that renders the report (nice for video)
+- `pocs/` stub files
+- optional `report.html` static page (good for video / GitHub Pages)
 
-### 2.2 Out of scope (do NOT build)
-- Full symbolic execution / custom bytecode VM
-- On-chain live scanning of mainnet (unless trivial and optional)
-- Agent payment (x402) features
-- Hyperledger / Hyperliquid consensus integrations
-- BGI A2A messaging protocols
-- A “Bob plugin marketplace”
-- Anything that requires API keys you don’t have
+## Out of scope (do NOT build)
+- Full symbolic execution / custom bytecode VM / SMT solver
+- Live mainnet scanners requiring paid RPC/API keys
+- Hyperledger, hash-receipt blockchains, on-chain notary systems
+- Agent payments (x402/x401), A2A messaging protocols
+- Bob plugin marketplaces, UI polish wars, login systems
+- Anything requiring credentials you do not have
 
-### 2.3 Hyperledger / audit trail (optional, simplified)
-**Why one might want it:** timestamped proof you found X before someone else (bounty priority).  
-**How (simple):** local append-only signed hash log of findings (`audit/receipts.jsonl` with SHA-256 + timestamp). **Skip blockchain.** Only mention “immutable-style receipt log” in the writeup. Do not spend hours on chains.
-
-### 2.4 ClawHub / skills pack (do this)
-Include `skills/` (or `.bob/skills/` + `rules/`) as **verified smart-contract security skill packs** the agents use:
+## Skills packs (required — this is the “ClawHub” idea)
+Create `skills/` with **verified checklists** the agents/rules use:
 - `skills/reentrancy/SKILL.md`
 - `skills/access-control/SKILL.md`
+- `skills/oracle-price/SKILL.md`
 - `skills/solana-account-validation/SKILL.md`
+- `skills/hyperliquid-hyperevm-notes/SKILL.md`
 - `skills/severity-grading/SKILL.md`
 - `skills/poc-stubs/SKILL.md`
-Each skill: when to use, checklist, false-positive notes, output format. These make the product explainable and reusable (“we ship verified check packs”).
+Each skill file: when to use, checklist, false-positive notes, required output fields.
+These make the system explainable and reusable.
 
----
-
-## 3. Architecture (keep it boring and shippable)
-
-```
+================================================================================
+# REPO LAYOUT (create this on a blank machine)
+================================================================================
 solguardian/
-  README.md                 # product story + demo
-  STATEMENTS.md             # two ≤500w submissions drafts
+  README.md
+  LICENSE                    # MIT
+  STATEMENTS.md              # two ≤500-word submission drafts
   DATA_SOURCES.md
-  bob_sessions/             # REQUIRED screenshots (PNG)
-  skills/                   # smart-contract skill packs
+  BUILD.md                   # how to run CLI + how Bob was used
+  bob_sessions/              # REQUIRED PNGs
+  skills/                    # checklists above
   samples/
-    solidity/Vault.sol      # seeded bugs (synthetic)
-    solana/vault/           # seeded Anchor bugs (synthetic)
-  src/ or solguardian/
-    cli.py | cli.ts         # `solguardian analyze path/to/contract`
-    detectors/              # one module per detector class
-    report/                 # json/md/html renderers
-    pocs/                   # stub templates
+    solidity/Vault.sol       # synthetic seeded bugs
+    solidity/HyperVault.sol  # HyperEVM-style synthetic
+    solana/vault/            # synthetic Anchor project or .rs excerpts
+  solguardian/               # Python package (preferred) OR src/ for TS
+    __init__.py
+    cli.py                   # `solguardian analyze <path>`
+    detectors/
+      evm_reentrancy.py
+      evm_access.py
+      evm_external_calls.py
+      evm_oracle.py
+      evm_sig_replay.py
+      solana_signer.py
+      solana_accounts.py
+      solana_cpi.py
+    report/
+      json_report.py
+      md_report.py
+    pocs/
+      foundry_stub.t.sol
+      anchor_stub.rs
   tests/
-  audit/receipts.jsonl      # optional hash log
   .gitignore
   .bobignore
+
+**Stack:** Python 3.11+ preferred (fast to ship). TypeScript acceptable if Bob
+makes that smoother. Detectors = AST/regex/heuristics + structured reasoning.
+No ML training. No Docker required.
+
+**CLI (must work outside Bob):**
+```
+solguardian analyze samples/solidity/Vault.sol
+solguardian analyze samples/solana/vault
+# writes report.json + report.md
 ```
 
-**Stack preference (pick one and stick to it):**
-- **Python** (fast to ship detectors + report) **or**
-- **TypeScript/Node** if Bob demo feels smoother
-- Foundry only as **PoC stub text**, not a full suite requirement
-- No heavy ML. Pattern/AST/regex + structured LLM roles via Bob is fine.
+================================================================================
+# BOB IDE USAGE PLAN (eligibility — do not skip)
+================================================================================
+Do major workstreams **in Bob IDE** and screenshot each task summary.
 
-**Runtime story:**
-1. **Primary demo:** IBM Bob IDE Agent mode runs the pipeline with **parallel subagents**
-2. **Portable CLI:** `solguardian analyze samples/solidity/Vault.sol` so the tool works outside Bob later
+Suggested Bob tasks (name screenshots to match):
+1. `solguardian_task01_agents_md_init_summary.png` — `/init` + AGENTS.md
+2. `solguardian_task02_evm_detectors_summary.png`
+3. `solguardian_task03_solana_detectors_summary.png`
+4. `solguardian_task04_skills_pack_summary.png`
+5. `solguardian_task05_report_cli_summary.png`
+6. `solguardian_task06_end_to_end_demo_summary.png`
 
----
+Bob must show: **Agent mode**, **parallel subagents** (e.g. EVM hunter, Solana
+hunter, report writer), **document understanding** on samples/skills, code
+review/commit flows.
 
-## 4. IBM Bob IDE usage plan (eligibility — do not skip)
+**Bobcoin budget (~40):** init 4 · EVM 10 · Solana 8 · skills 6 · report/CLI 6 · demo 4 · reserve 2.
 
-Use Bob IDE for **every major workstream** and **screenshot task summaries as you go**.
+================================================================================
+# SAMPLES (synthetic only)
+================================================================================
+Seed ~8 intentional issues total, clearly marked educational.
 
-Required Bob showcase (make visible in video):
-1. `/init` / AGENTS.md on the repo (persistent context)
-2. **Agent mode** to implement detectors
-3. **Parallel subagents** for detector families (security, Solana, reporting)
-4. Document understanding on sample contracts + skill packs
-5. Code review / commit / PR flow via Bob where natural
-6. Custom rules or skills that encode SolGuardian severity policy
+`Vault.sol` (EVM):
+- reentrancy in withdraw
+- missing access control on adminDrain
+- tx.origin auth
+- unchecked call return
+- spot-price oracle assumption
 
-Suggested task list for `bob_sessions/` (name files like this):
-- `solguardian_task01_agents_md_init_summary.png`
-- `solguardian_task02_evm_detectors_summary.png`
-- `solguardian_task03_solana_detectors_summary.png`
-- `solguardian_task04_report_pipeline_summary.png`
-- `solguardian_task05_skills_pack_summary.png`
-- `solguardian_task06_demo_end_to_end_summary.png`
+`HyperVault.sol`:
+- same EVM classes, framed as HyperEVM lending/vault pattern (no real protocol copy)
 
-**Bobcoin budget (~40):** scaffold 4 · detectors 14 · report 8 · skills 6 · demo re-runs 4 · reserve 4.
-
-**Account switch (critical):** After the hackathon invite email, in Bob IDE → Settings → General → select **`ibm-coding-challenge-uat` (region: us-east)**. Do not burn personal coins.
-
----
-
-## 5. Demo contracts (synthetic, seeded)
-Create 6–10 intentional issues total across two targets, e.g.:
-
-`Vault.sol`:
-- reentrancy in `withdraw`
-- missing access control on `adminDrain`
-- `tx.origin` auth
-- unchecked `call` return
-- centralized oracle spot price
-
-`vault` (Anchor):
-- missing signer check
+`solana/vault`:
+- missing signer
 - account type confusion
 - unchecked CPI
-- precision loss on token math
+- precision loss
 
-**Label them clearly as synthetic teaching samples.** No live mainnet “victims.”
+================================================================================
+# DEMO METRICS (show these)
+================================================================================
+- Seeded critical/high findings caught (aim ≥7/8)
+- Time to first full report (<5 minutes)
+- Every finding explained in plain English in ~15 seconds
+- PoC stub per confirmed finding
 
----
+================================================================================
+# VIDEO SCRIPT (≤3 min, you record or prepare the script + screen path)
+================================================================================
+0:00–0:25  Pain: audits are slow; exploit classes get missed  
+0:25–1:00  What SolGuardian is (README or 1 slide)  
+1:00–2:20  LIVE in IBM Bob IDE: open sample → run SolGuardian → parallel
+           subagents → findings + PoC stub (this section ≥90s)  
+2:20–2:45  Metrics + bob_sessions/ evidence  
+2:45–3:00  Jason Parser Research · built with IBM Bob
 
-## 6. Demo metrics (tape these on screen)
-| Metric | Target |
-|--------|--------|
-| Seeded critical/high findings caught | e.g. 7/8 or better |
-| Time to first report | &lt; 5 minutes end-to-end |
-| Human explanation quality | every finding readable in 15s |
-| PoC stub generated | 1 per confirmed finding |
+Narration required. Show the Bob UI, not only a terminal.
 
----
+================================================================================
+# WORKING AGREEMENTS
+================================================================================
+- Implement in small commits. After each Bob workstream, save a PNG to `bob_sessions/`.
+- Demo path before polish. If time is short, keep **at least 2 Solana detectors**.
+- Do not invent network credentials. Samples run offline.
+- When the hackathon Bob invite arrives, switch the IDE account **before** heavy use.
+- If a detector is heuristic, say so in README (false-positive honesty).
 
-## 7. Video plan (≤3 minutes)
-1. **0:00–0:25** Pain: audits take days; juniors miss classes; bounty work is grind
-2. **0:25–1:00** What SolGuardian is (one slide or README)
-3. **1:00–2:20** **Live in Bob IDE:** open sample → run SolGuardian → show **parallel subagents** → findings + PoC stub
-4. **2:20–2:45** Metrics + `bob_sessions/` evidence
-5. **2:45–3:00** Jason Parser Research + “built with IBM Bob”
+================================================================================
+# IMMEDIATE START ORDER
+================================================================================
+1. Open IBM Bob IDE. Complete login (IBMid + email verification code).
+2. Clone/open https://github.com/jamesparser/solguardian (already created) OR
+   `git clone git@github.com:jamesparser/solguardian.git`
+3. In Bob: `/init` for AGENTS.md describing SolGuardian.
+4. Scaffold package + CLI + sample contracts with seeded bugs.
+5. EVM detectors → report.md/json.
+6. Solana detectors.
+7. Skills packs.
+8. End-to-end CLI run on samples. Save outputs.
+9. Record demo path. Write STATEMENTS.md. Capture remaining bob_sessions PNGs.
+10. Push everything public. Prepare lablab submission fields.
 
-Narration required. Show Bob UI, not only terminal.
+================================================================================
+# SUCCESS DEFINITION
+================================================================================
+Done means: public repo runs
+`solguardian analyze samples/...` and prints a credible multi-finding report;
+Bob IDE visibly orchestrated the work; `bob_sessions/` has PNGs; statements and
+video materials exist; nothing secret committed; project is original and
+judged as a developer-workflow improvement (testing / code review) with Bob core.
 
----
-
-## 8. Submission checklist (lablab)
-- [ ] Public repo `jamesparser/solguardian` (or renamed clear-to-ship)
-- [ ] `bob_sessions/` complete PNGs
-- [ ] `report.md` from a real run on samples
-- [ ] `DATA_SOURCES.md`
-- [ ] `STATEMENTS.md` (Problem & Solution + IBM Bob Usage, each ≤500w)
-- [ ] Video MP4 ≤3 min
-- [ ] Cover image + short slides
-- [ ] Demo app URL (GitHub Pages of `report.html` is enough)
-- [ ] MIT LICENSE
-- [ ] Submit on lablab before **Sep 27 22:00 Bangkok**
-- [ ] Later: post-hackathon feedback form (for $100 participant reward)
-
----
-
-## 9. Naming / brand
-- Product: **SolGuardian**
-- Org/author line: Jason Parser Research · @jasonparsersec · github.com/jamesparser
-- Do **not** call it ExploitSmith / SecureShip Gate / Clear to Ship (dead names)
-- Optional footer: “Skills packs derived from verified smart-contract checklists”
-
----
-
-## 10. Working agreements
-1. **You implement.** MiMo (this coordinator) only orchestrates, writes prompts, tracks, and submits copy.
-2. Prefer **small PRs** with screenshots of Bob sessions attached to the PR body or `bob_sessions/`.
-3. If Bobcoins are tight, implement detectors as pure code and use Bob for orchestration/review/skills — still show Agent mode + subagents.
-4. If time is tight, cut Solana depth first **only if** Solidity path is fully demoable; but try to keep **at least 2 Solana detectors** because the name and pitch promise both.
-5. When stuck: ship the demo path before polish.
-
----
-
-## 11. Immediate next steps for you (coding agent)
-1. Confirm Bob IDE installed (v2.2.0) and login works
-2. When invite arrives: switch to `ibm-coding-challenge-uat` / us-east
-3. Create/rename GitHub repo to **jamesparser/solguardian**
-4. `/init` in Bob + AGENTS.md
-5. Seed `samples/` + skeleton CLI
-6. Implement EVM detectors → report
-7. Add Solana detectors
-8. Write skills packs
-9. End-to-end demo + screenshots + statements + video
-
----
-
-## 12. References
-- Event: https://lablab.ai/ai-hackathons/ibm-bob-2-hackathon
-- Guide: https://lablab-ibm-bob-2-hackathon-guide.s3.us.cloud-object-storage.appdomain.cloud/index.html
-- Bob docs: https://bob.ibm.com/docs/ide
-- Bob download: https://bob.ibm.com/download
-- Repo template: https://github.com/watsonxhackathon/ibm-hackathon-template
-
-**Go build. Capture Bob session summaries as you go. Ship a demoable report by Sunday 12:00 Bangkok.**
+# GO.
+================================================================================
