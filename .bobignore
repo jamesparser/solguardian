@@ -1,0 +1,42 @@
+# Bob IDE context ignore - keeps Agent mode's index small and stops secrets reaching a model.
+# Same spirit as .gitignore, plus anything that would waste Bobcoins on noise.
+
+# large / generated
+.git/
+out/
+demo/vendor/
+**/__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+build/
+dist/
+*.egg-info/
+node_modules/
+target/
+venv/
+.venv/
+
+# never expose credentials to any agent context
+.env
+.env.*
+*.pem
+*.key
+*.kdbx
+secrets/
+credentials*
+rpc_urls*
+*. mnemonic*
+~/.solana/
+~/.config/solana/id.json
+
+# binary bulk that adds no reasoning value (keep the required evidence PNGs)
+bob_sessions/**/*.jpg
+*.zip
+*.tar.gz
+*.mp4
+*.mov
+
+# OS noise
+.DS_Store
+Thumbs.db

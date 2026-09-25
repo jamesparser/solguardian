@@ -1,0 +1,43 @@
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+venv/
+.venv/
+
+# tooling / editors
+.idea/
+.vscode/
+.DS_Store
+*.swp
+
+# secrets & local config - never commit these
+.env
+.env.*
+*.pem
+*.key
+*.kdbx
+secrets/
+credentials*
+rpc_urls*
+anvil/
+broadcast/
+cache/solidity-files-cache.json
+out/
+
+# solana / foundry build output
+target/
+node_modules/
+.anchor/
+test-vectors/
+
+# local scratch (committed demo output lives in demo/)
+local/
+scratch/
+*.log
