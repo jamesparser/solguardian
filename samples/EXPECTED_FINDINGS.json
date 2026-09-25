@@ -1,0 +1,357 @@
+{
+  "_comment": "Ground truth for the SolGuardian demo. Every entry is an issue deliberately seeded into a synthetic teaching sample. `lines` is a 1-indexed inclusive window; a finding counts as a catch when it is in the same file, inside the window, and matches the rule/detector/class. Used by solguardian analyze to print recall/precision.",
+  "seeded": [
+    {
+      "key": "evm-reentrancy-withdraw",
+      "file": "Vault.sol",
+      "lines": [
+        72,
+        80
+      ],
+      "rules": [
+        "CEI-001"
+      ],
+      "detectors": [
+        "evm_reentrancy"
+      ],
+      "classes": [
+        "reentrancy",
+        "CEI"
+      ],
+      "severity": "critical",
+      "note": "state updated after the value-bearing external call"
+    },
+    {
+      "key": "evm-access-adminDrain",
+      "file": "Vault.sol",
+      "lines": [
+        83,
+        90
+      ],
+      "rules": [
+        "AC-001"
+      ],
+      "detectors": [
+        "evm_access"
+      ],
+      "classes": [
+        "access-control"
+      ],
+      "severity": "critical",
+      "note": "anyone can empty the vault: no modifier, no sender check"
+    },
+    {
+      "key": "evm-tx-origin-setOperator",
+      "file": "Vault.sol",
+      "lines": [
+        93,
+        97
+      ],
+      "rules": [
+        "AC-002"
+      ],
+      "detectors": [
+        "evm_access"
+      ],
+      "classes": [
+        "tx-origin",
+        "access-control"
+      ],
+      "severity": "high",
+      "note": "authorisation based on tx.origin"
+    },
+    {
+      "key": "evm-unchecked-call-refundPending",
+      "file": "Vault.sol",
+      "lines": [
+        106,
+        115
+      ],
+      "rules": [
+        "EC-001",
+        "EC-002"
+      ],
+      "detectors": [
+        "evm_external_calls"
+      ],
+      "classes": [
+        "unchecked-call",
+        "error-handling"
+      ],
+      "severity": "high",
+      "note": "ERC20 transfer() return value discarded"
+    },
+    {
+      "key": "evm-spot-price-assetValue",
+      "file": "Vault.sol",
+      "lines": [
+        119,
+        125
+      ],
+      "rules": [
+        "OR-001",
+        "OR-002"
+      ],
+      "detectors": [
+        "evm_oracle"
+      ],
+      "classes": [
+        "oracle",
+        "price-manipulation",
+        "spot"
+      ],
+      "severity": "critical",
+      "note": "AMM reserves + unchecked Chainlink round decide valuation"
+    },
+    {
+      "key": "hyperevm-delegatecall-migrate",
+      "file": "HyperVault.sol",
+      "lines": [
+        52,
+        58
+      ],
+      "rules": [
+        "DC-001"
+      ],
+      "detectors": [
+        "evm_delegatecall"
+      ],
+      "classes": [
+        "delegatecall",
+        "upgradeability"
+      ],
+      "severity": "critical",
+      "note": "delegatecall into a caller-chosen target"
+    },
+    {
+      "key": "hyperevm-sig-replay-claimTreasuryGrant",
+      "file": "HyperVault.sol",
+      "lines": [
+        87,
+        93
+      ],
+      "rules": [
+        "SR-001",
+        "SR-002"
+      ],
+      "detectors": [
+        "evm_sig_replay"
+      ],
+      "classes": [
+        "signature",
+        "replay"
+      ],
+      "severity": "critical",
+      "note": "no nonce, no deadline, no domain binding, raw ecrecover"
+    },
+    {
+      "key": "hyperevm-selfdestruct-decommission",
+      "file": "HyperVault.sol",
+      "lines": [
+        100,
+        105
+      ],
+      "rules": [
+        "SD-001"
+      ],
+      "detectors": [
+        "evm_selfdestruct"
+      ],
+      "classes": [
+        "selfdestruct",
+        "irreversible"
+      ],
+      "severity": "critical",
+      "note": "reachable selfdestruct with a caller-chosen beneficiary"
+    },
+    {
+      "key": "hyperevm-stuck-funds-recoverTokens",
+      "file": "HyperVault.sol",
+      "lines": [
+        107,
+        113
+      ],
+      "rules": [
+        "SF-001",
+        "SF-003"
+      ],
+      "detectors": [
+        "evm_selfdestruct"
+      ],
+      "classes": [
+        "stuck-funds",
+        "unreachable-guard"
+      ],
+      "severity": "high",
+      "note": "recovery gated on pendingAdmin, which is never assigned"
+    },
+    {
+      "key": "hyperevm-unguarded-logic-pointer",
+      "file": "HyperVault.sol",
+      "lines": [
+        60,
+        63
+      ],
+      "rules": [
+        "DC-002"
+      ],
+      "detectors": [
+        "evm_delegatecall"
+      ],
+      "classes": [
+        "proxy",
+        "storage-collision",
+        "access-control"
+      ],
+      "severity": "high",
+      "note": "setImplementation() writable by anyone"
+    },
+    {
+      "key": "solana-missing-signer-withdraw",
+      "file": "lib.rs",
+      "lines": [
+        50,
+        60
+      ],
+      "rules": [
+        "SIGNER-001",
+        "SIGNER-002"
+      ],
+      "detectors": [
+        "solana_signer"
+      ],
+      "classes": [
+        "missing-signer",
+        "signer"
+      ],
+      "severity": "critical",
+      "note": "user_authority is a raw AccountInfo used for a lamport credit"
+    },
+    {
+      "key": "solana-token-cpi-unvalidated-deposit",
+      "file": "lib.rs",
+      "lines": [
+        36,
+        46
+      ],
+      "rules": [
+        "ACCT-002"
+      ],
+      "detectors": [
+        "solana_accounts"
+      ],
+      "classes": [
+        "account-validation",
+        "cpi",
+        "token"
+      ],
+      "severity": "critical",
+      "note": "user_token_account handed to token::transfer with no owner/mint validation"
+    },
+    {
+      "key": "solana-account-confusion-deposit",
+      "file": "lib.rs",
+      "lines": [
+        148,
+        162
+      ],
+      "rules": [
+        "ACCT-001",
+        "ACCT-002"
+      ],
+      "detectors": [
+        "solana_accounts"
+      ],
+      "classes": [
+        "account-validation",
+        "type-confusion"
+      ],
+      "severity": "high",
+      "note": "user_vault is an UncheckedAccount carrying a stored share balance"
+    },
+    {
+      "key": "solana-unchecked-cpi-settle_external",
+      "file": "lib.rs",
+      "lines": [
+        82,
+        99
+      ],
+      "rules": [
+        "CPI-001",
+        "CPI-002"
+      ],
+      "detectors": [
+        "solana_cpi"
+      ],
+      "classes": [
+        "cpi",
+        "unchecked"
+      ],
+      "severity": "high",
+      "note": "program::invoke result dropped; callee id comes from the client"
+    },
+    {
+      "key": "solana-precision-loss-deposit",
+      "file": "lib.rs",
+      "lines": [
+        29,
+        47
+      ],
+      "rules": [
+        "MATH-001"
+      ],
+      "detectors": [
+        "solana_math"
+      ],
+      "classes": [
+        "precision",
+        "math"
+      ],
+      "severity": "high",
+      "note": "amount / total_deposits * SCALE truncates small deposits to zero shares"
+    },
+    {
+      "key": "solana-unsafe-deser-load_foreign_config",
+      "file": "lib.rs",
+      "lines": [
+        111,
+        122
+      ],
+      "rules": [
+        "DESER-001",
+        "ACCT-001"
+      ],
+      "detectors": [
+        "solana_deser"
+      ],
+      "classes": [
+        "deserialization",
+        "unsafe",
+        "seeds-validation",
+        "unsafe-deserialization"
+      ],
+      "severity": "critical",
+      "note": "raw pointer cast over foreign account data"
+    },
+    {
+      "key": "solana-remaining-accounts-settle_many",
+      "file": "lib.rs",
+      "lines": [
+        100,
+        110
+      ],
+      "rules": [
+        "REMOT-001"
+      ],
+      "detectors": [
+        "solana_cpi"
+      ],
+      "classes": [
+        "remaining-accounts",
+        "panic"
+      ],
+      "severity": "medium",
+      "note": "remaining_accounts indexed before any length check"
+    }
+  ]
+}
