@@ -94,4 +94,10 @@ keeps binary bulk out of the model's context.
 detectors are deterministic Python, the full 17/17 report reproduces with **zero** Bobcoins left.
 A judge who clones the repo gets the same output on their own machine, offline, for free.
 
-*(≈400 words)*
+The concurrency is measured, including where it disappoints: on a 24-contract corpus (median of
+five runs) one agent took 5.1 s, threaded shards 4.5 s, process shards 2.0 s — threads barely beat
+serial under the GIL, so only processes earn their keep. All three return byte-identical findings,
+because ranking uses a total order rather than arrival order, asserted in CI. Sharding per file is
+what carries the claim past this demo: a 40-contract monorepo gets forty hunters, not a fixed pair.
+
+*(≈500 words)*

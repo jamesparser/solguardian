@@ -81,13 +81,15 @@ def main() -> int:
            font=font(30), fill=INK)
     d.text((64, 214), "EVM  ·  HyperEVM  ·  Solana / Anchor        built with IBM Bob 2.0",
            font=font(22), fill=DIM)
+    d.text((64, 244), "full ranked report with PoC stubs in ~1 second, offline",
+           font=font(18), fill=DIM)
 
     # stat cards
     cards = [
         ("%d/%d" % (m["seeds"], m["seeds"]), "planted issues\ncaught", CRIT),
         ("0", "findings on the\nclean control", OK),
         ("%d" % m["detectors"], "detectors\n%d EVM · %d Solana" % (m["evm"], m["sol"]), ACCENT),
-        ("~1s", "to a full report\nwith 49 PoC stubs", HIGH),
+        ("N\u00d7", "concurrent file-sharded\nagents + adjudicator", HIGH),
     ]
     x = 64
     for value, label, color in cards:

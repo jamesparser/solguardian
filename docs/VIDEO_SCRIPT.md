@@ -35,13 +35,18 @@ Rehearse this path until it is muscle memory. Every step is ≤15 seconds.
 4. **1:35–1:50** — Open `out/vault/report.md` next to the source. Show one finding's section:
    description, exploit sketch, patch sketch, PoC path, skill checklist.
    *"This part is the point: the finding quotes the human-written checklist it enforced, so you can argue with the rule instead of guessing why a model said no."*
-5. **1:50–2:05** — Show the **parallel subagents**: run `solguardian analyze samples --out out/samples --html`
-   and point at the `[evm-hunter]` / `[solana-hunter]` interleaved log lines, then the Agent pipeline
-   table in `report.md`.
-   *"Two hunters ran concurrently: seven detectors on the EVM side, six on the Solana side."*
-6. **2:05–2:15** — Open `out/samples/report.html` (single file, no network). Scroll the KPI row.
-   *"This page is self-contained — it is also what is hosted from the repo."*
-7. **2:15–2:25** — Show a PoC stub file, then the CI gate:
+5. **1:50–2:05** — Show the **parallel subagents**. First run it in Bob chat, then in the terminal:
+   ```
+   solguardian analyze samples --out out/samples --html
+   ```
+   Point at the interleaved `[evm-hunter#1] … [solana-hunter#2]` log lines and the Agent pipeline
+   table in `report.md`, then run `solguardian list` to show the four agent roles.
+   *"Four agent roles, and the hunters are sharded per file — five of them ran at once on this repo,
+   and a 40-contract repo would spawn forty. The adjudicator then cross-checks where independent
+   detectors agree: here, thirty of forty-nine findings were corroborated twice."*
+6. **2:05–2:15** — Open `out/samples/report.html` (single file, no network). Scroll the KPI row:
+   findings, recall, **corroborated**, **agent runs**, then the Agent pipeline table.
+   *"This page is self-contained — no CDN, no network — and it is also what is hosted from the repo."*
    `solguardian analyze samples --fail-on critical; echo $?` → `1`.
    *"Every finding gets a test skeleton, and the exit code turns this into a CI gate."*
 

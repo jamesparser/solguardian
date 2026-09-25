@@ -101,6 +101,43 @@ HyperEVM is treated as EVM bytecode with different trust assumptions — bridged
 HyperCore price reads as consensus inputs, distinct fee/finality model — not as a new chain
 client. Findings against HyperEVM-shaped code are tagged `chain: "hyperevm"`.
 
+## Multi-agent by construction
+
+The pipeline is a set of named agents the orchestrator dispatches, not one big loop:
+
+| agent | role |
+| --- | --- |
+| `evm-hunter#1..N` | Solidity/HyperEVM shards — 7 detectors each |
+| `solana-hunter#1..N` | Anchor/Rust shards — 6 detectors each |
+| `adjudicator` | cross-checks where independent detectors agree |
+| `report-writer` | gates the output contract before anything is written |
+
+Files are partitioned by source size (largest-first bin packing) so shards finish together; a
+40-contract repo gets 40-way fan-out rather than a fixed pair of agents. `--workers N` controls
+it, and `--backend processes` removes the GIL ceiling on large trees:
+
+```bash
+python3 tools/scale_check.py --files 24      # serial vs threads vs processes
+```
+
+Measured (%s).
+Only processes genuinely beat serial — scanning is CPU-bound regex work, so threads pay GIL
+contention and land within noise of serial. And all three return **byte-identical** findings,
+because
+ranking uses a total order rather than arrival order. That equivalence is asserted by
+[`tests/test_multi_agent.py`](tests/test_multi_agent.py), so parallelism cannot quietly change a
+report. Threads stay the default because on macOS/Windows `spawn` re-imports the caller's
+`__main__` in every child — an unguarded script would recursively spawn processes — so `auto`
+upgrades only for the guarded CLI entry point.
+
+The adjudicator is deliberately weaker than it sounds: it **annotates** corroboration and cannot
+raise a severity or a confidence. Agreement is a triage signal, not evidence, and
+`test_adjudicator_cannot_promote_its_own_guesses` fails if that ever stops being true.
+
+The same three-role split is what Bob's subagents do at build time
+([`bob_sessions/bob_tasks/task03_solana_detectors.md`](bob_sessions/bob_tasks/task03_solana_detectors.md)
+spawns three concurrent agents) — `solguardian/agents/` is that workflow, shipped as code.
+
 ## Ground truth, and how honest it is
 
 `samples/EXPECTED_FINDINGS.json` lists **17 issues deliberately planted** in three synthetic
@@ -158,7 +195,8 @@ solguardian/            the package: core (parsers, finding model, skills, scori
                         detectors/, report/, agents/ (EvmHunter, SolanaHunter, ReportWriter)
 skills/                 14 SKILL.md packs - the verified checklists agents and rules enforce
 samples/                synthetic seeded targets + EXPECTED_FINDINGS.json (ground truth)
-tests/                  55 tests: contract, recall, false positives, CLI, docs, secrets
+tests/                  <!-- solguardian-tests: 78 -->78 tests: contract, ground-truth recall,
+                        false positives, multi-agent, CLI, docs, secrets
 demo/                   committed report for GitHub Pages
 bob_sessions/           required Bob evidence: PNG task summaries + the exact prompts used
 docs/                   submission runbook, video script, slide outline, cover generator

@@ -57,7 +57,9 @@ and **one root cause = one finding**, so packs do not pile up on the same line.
 | findings emitted | 49 (16 critical · 18 high · 12 medium · 3 low) |
 | findings on the clean negative control | **0** |
 | PoC stubs | one per finding (Foundry / Anchor skeletons) |
-| tests | 55 passing, stdlib only |
+| tests | <!-- solguardian-tests: 78 -->78 passing, stdlib only |
+| agent roles | 2 ecosystem hunters (file-sharded, N concurrent) → adjudicator → report writer |
+| 24-contract corpus, 6 workers | serial 5.1 s → threads 4.5 s → processes 2.0 s (medians), **identical findings** |
 | network calls / API keys | **0** |
 
 **Honesty slide, in the deck:** heuristics. False positives on unusual-but-correct code; false

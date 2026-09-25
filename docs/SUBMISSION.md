@@ -7,8 +7,10 @@ Everything below is copy-paste ready except the four items marked **YOU**.
 
 | item | state |
 | --- | --- |
-| tool (13 detectors, 14 skill packs, CLI, agents, reports) | ✅ done, `python3 -m solguardian analyze samples` |
+| tool (13 detectors, 14 skill packs, 4 agent roles, CLI, reports) | ✅ done, `python3 -m solguardian analyze samples` |
+| multi-agent fan-out (file-sharded hunters, adjudicator, writer) | ✅ `--workers N`, `--backend threads/processes` |
 | ground truth | ✅ 17/17 seeded issues caught, 0 findings on the written-correct control |
+| concurrency equivalence | ✅ `tools/scale_check.py`: serial = threads = processes, byte-identical |
 | tests | ✅ 55 passing, stdlib only (`python3 -m unittest discover -s tests`) |
 | repo docs | ✅ README, AGENTS, BUILD, DATA_SOURCES, STATEMENTS, samples/README |
 | demo artefacts | ✅ `demo/` (report.json/md/html + 49 PoC stubs), `docs/cover.png`, slides, video script |
@@ -88,6 +90,8 @@ cd /Users/terminal/solguardian-work/solguardian
 python3 -m unittest discover -s tests          # 55 OK
 rm -rf out && python3 -m solguardian analyze samples --out out/samples --html
 python3 -m solguardian analyze samples/clean --out out/clean --quiet   # 0 findings
+python3 tools/recall_gate.py                   # recall + precision + perf budget
+python3 tools/scale_check.py --files 24        # serial == threads == processes (multi-agent claim)
 solguardian demo --html                        # the exact on-camera command
 git status --short                             # clean tree
 ```

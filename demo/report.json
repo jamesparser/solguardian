@@ -34,7 +34,7 @@
   ],
   "summary": {
     "total": 49,
-    "duration_ms": 1451,
+    "duration_ms": 669,
     "by_severity": {
       "critical": 16,
       "high": 18,
@@ -61,7 +61,8 @@
       "solana_authority": 3,
       "evm_delegatecall": 2,
       "solana_deser": 1
-    }
+    },
+    "corroborated": 30
   },
   "findings": [
     {
@@ -109,7 +110,9 @@
         "delegatecall",
         "upgradeability",
         "DC-001"
-      ]
+      ],
+      "corroborated_by": [],
+      "independent_confirmation": 0
     },
     {
       "id": "SG-SOL-001",
@@ -157,7 +160,11 @@
         "unsafe",
         "deserialization",
         "DESER-001"
-      ]
+      ],
+      "corroborated_by": [
+        "ACCT-001 (SG-SOL-014)"
+      ],
+      "independent_confirmation": 1
     },
     {
       "id": "SG-EVM-002",
@@ -204,7 +211,13 @@
         "replay",
         "missing-nonce",
         "SR-002"
-      ]
+      ],
+      "corroborated_by": [
+        "CEI-001 (SG-EVM-003)",
+        "EC-001 (SG-EVM-010)",
+        "EC-003 (SG-EVM-024)"
+      ],
+      "independent_confirmation": 2
     },
     {
       "id": "SG-EVM-003",
@@ -255,7 +268,16 @@
         "eth",
         "value-transfer",
         "CEI-001"
-      ]
+      ],
+      "corroborated_by": [
+        "EC-001 (SG-EVM-010)",
+        "EC-003 (SG-EVM-024)",
+        "SR-001 (SG-EVM-017)",
+        "SR-002 (SG-EVM-002)",
+        "SR-003 (SG-EVM-020)",
+        "SR-004 (SG-EVM-023)"
+      ],
+      "independent_confirmation": 2
     },
     {
       "id": "SG-EVM-004",
@@ -301,7 +323,9 @@
         "selfdestruct",
         "irreversible",
         "SD-001"
-      ]
+      ],
+      "corroborated_by": [],
+      "independent_confirmation": 0
     },
     {
       "id": "SG-EVM-005",
@@ -352,7 +376,9 @@
         "eth",
         "value-transfer",
         "CEI-001"
-      ]
+      ],
+      "corroborated_by": [],
+      "independent_confirmation": 0
     },
     {
       "id": "SG-EVM-006",
@@ -399,7 +425,12 @@
         "access-control",
         "value-flow",
         "AC-001"
-      ]
+      ],
+      "corroborated_by": [
+        "CEI-001 (SG-EVM-007)",
+        "SD-002 (SG-EVM-009)"
+      ],
+      "independent_confirmation": 2
     },
     {
       "id": "SG-EVM-007",
@@ -450,7 +481,12 @@
         "eth",
         "value-transfer",
         "CEI-001"
-      ]
+      ],
+      "corroborated_by": [
+        "AC-001 (SG-EVM-006)",
+        "SD-002 (SG-EVM-009)"
+      ],
+      "independent_confirmation": 2
     },
     {
       "id": "SG-SOL-002",
@@ -497,7 +533,9 @@
         "solana",
         "missing-signer",
         "SIGNER-001"
-      ]
+      ],
+      "corroborated_by": [],
+      "independent_confirmation": 0
     },
     {
       "id": "SG-EVM-008",
@@ -547,7 +585,9 @@
         "price-manipulation",
         "flash-loan",
         "OR-001"
-      ]
+      ],
+      "corroborated_by": [],
+      "independent_confirmation": 0
     },
     {
       "id": "SG-SOL-003",
@@ -592,7 +632,12 @@
         "missing-signer",
         "privilege",
         "SIGNER-002"
-      ]
+      ],
+      "corroborated_by": [
+        "AUTH-003 (SG-SOL-021)",
+        "MATH-002 (SG-SOL-023)"
+      ],
+      "independent_confirmation": 2
     },
     {
       "id": "SG-SOL-004",
@@ -637,7 +682,12 @@
         "missing-signer",
         "privilege",
         "SIGNER-002"
-      ]
+      ],
+      "corroborated_by": [
+        "CPI-003 (SG-SOL-015)",
+        "MATH-004 (SG-SOL-025)"
+      ],
+      "independent_confirmation": 2
     },
     {
       "id": "SG-SOL-005",
@@ -682,7 +732,9 @@
         "missing-signer",
         "privilege",
         "SIGNER-002"
-      ]
+      ],
+      "corroborated_by": [],
+      "independent_confirmation": 0
     },
     {
       "id": "SG-SOL-006",
@@ -727,7 +779,13 @@
         "cpi",
         "account-validation",
         "ACCT-002"
-      ]
+      ],
+      "corroborated_by": [
+        "MATH-001 (SG-SOL-010)",
+        "MATH-002 (SG-SOL-022)",
+        "MATH-003 (SG-SOL-016)"
+      ],
+      "independent_confirmation": 1
     },
     {
       "id": "SG-SOL-007",
@@ -774,7 +832,11 @@
         "cpi",
         "program-validation",
         "CPI-002"
-      ]
+      ],
+      "corroborated_by": [
+        "ACCT-001 (SG-SOL-013)"
+      ],
+      "independent_confirmation": 1
     },
     {
       "id": "SG-EVM-009",
@@ -818,7 +880,12 @@
         "arbitrary-send",
         "value-flow",
         "SD-002"
-      ]
+      ],
+      "corroborated_by": [
+        "AC-001 (SG-EVM-006)",
+        "CEI-001 (SG-EVM-007)"
+      ],
+      "independent_confirmation": 2
     },
     {
       "id": "SG-SOL-008",
@@ -865,7 +932,9 @@
         "solana",
         "missing-signer",
         "SIGNER-001"
-      ]
+      ],
+      "corroborated_by": [],
+      "independent_confirmation": 0
     },
     {
       "id": "SG-SOL-009",
@@ -912,7 +981,9 @@
         "solana",
         "missing-signer",
         "SIGNER-001"
-      ]
+      ],
+      "corroborated_by": [],
+      "independent_confirmation": 0
     },
     {
       "id": "SG-SOL-010",
@@ -960,7 +1031,12 @@
         "precision",
         "accounting",
         "MATH-001"
-      ]
+      ],
+      "corroborated_by": [
+        "ACCT-001 (SG-SOL-012)",
+        "ACCT-002 (SG-SOL-006)"
+      ],
+      "independent_confirmation": 1
     },
     {
       "id": "SG-SOL-011",
@@ -1007,7 +1083,11 @@
         "cpi",
         "unchecked",
         "CPI-001"
-      ]
+      ],
+      "corroborated_by": [
+        "ACCT-001 (SG-SOL-013)"
+      ],
+      "independent_confirmation": 1
     },
     {
       "id": "SG-EVM-010",
@@ -1053,7 +1133,15 @@
         "unchecked-call",
         "error-handling",
         "EC-001"
-      ]
+      ],
+      "corroborated_by": [
+        "CEI-001 (SG-EVM-003)",
+        "SR-001 (SG-EVM-017)",
+        "SR-002 (SG-EVM-002)",
+        "SR-003 (SG-EVM-020)",
+        "SR-004 (SG-EVM-023)"
+      ],
+      "independent_confirmation": 2
     },
     {
       "id": "SG-EVM-011",
@@ -1098,7 +1186,9 @@
         "access-control",
         "tx-origin",
         "AC-002"
-      ]
+      ],
+      "corroborated_by": [],
+      "independent_confirmation": 0
     },
     {
       "id": "SG-EVM-012",
@@ -1144,7 +1234,11 @@
         "unchecked-call",
         "error-handling",
         "EC-001"
-      ]
+      ],
+      "corroborated_by": [
+        "AC-001 (SG-EVM-019)"
+      ],
+      "independent_confirmation": 1
     },
     {
       "id": "SG-EVM-013",
@@ -1190,7 +1284,9 @@
         "access-control",
         "config",
         "AC-003"
-      ]
+      ],
+      "corroborated_by": [],
+      "independent_confirmation": 0
     },
     {
       "id": "SG-EVM-014",
@@ -1236,7 +1332,9 @@
         "oracle",
         "staleness",
         "OR-002"
-      ]
+      ],
+      "corroborated_by": [],
+      "independent_confirmation": 0
     },
     {
       "id": "SG-EVM-015",
@@ -1282,7 +1380,9 @@
         "access-control",
         "config",
         "AC-003"
-      ]
+      ],
+      "corroborated_by": [],
+      "independent_confirmation": 0
     },
     {
       "id": "SG-SOL-012",
@@ -1330,7 +1430,13 @@
         "account-validation",
         "type-confusion",
         "ACCT-001"
-      ]
+      ],
+      "corroborated_by": [
+        "MATH-001 (SG-SOL-010)",
+        "MATH-002 (SG-SOL-022)",
+        "MATH-003 (SG-SOL-016)"
+      ],
+      "independent_confirmation": 1
     },
     {
       "id": "SG-SOL-013",
@@ -1378,7 +1484,12 @@
         "account-validation",
         "type-confusion",
         "ACCT-001"
-      ]
+      ],
+      "corroborated_by": [
+        "CPI-001 (SG-SOL-011)",
+        "CPI-002 (SG-SOL-007)"
+      ],
+      "independent_confirmation": 1
     },
     {
       "id": "SG-SOL-014",
@@ -1426,7 +1537,11 @@
         "account-validation",
         "type-confusion",
         "ACCT-001"
-      ]
+      ],
+      "corroborated_by": [
+        "DESER-001 (SG-SOL-001)"
+      ],
+      "independent_confirmation": 1
     },
     {
       "id": "SG-EVM-016",
@@ -1472,7 +1587,9 @@
         "proxy",
         "storage-collision",
         "DC-002"
-      ]
+      ],
+      "corroborated_by": [],
+      "independent_confirmation": 0
     },
     {
       "id": "SG-EVM-017",
@@ -1517,7 +1634,13 @@
         "signature",
         "replay",
         "SR-001"
-      ]
+      ],
+      "corroborated_by": [
+        "CEI-001 (SG-EVM-003)",
+        "EC-001 (SG-EVM-010)",
+        "EC-003 (SG-EVM-024)"
+      ],
+      "independent_confirmation": 2
     },
     {
       "id": "SG-EVM-018",
@@ -1562,7 +1685,9 @@
         "stuck-funds",
         "unreachable-guard",
         "SF-001"
-      ]
+      ],
+      "corroborated_by": [],
+      "independent_confirmation": 0
     },
     {
       "id": "SG-EVM-019",
@@ -1609,7 +1734,11 @@
         "access-control",
         "value-flow",
         "AC-001"
-      ]
+      ],
+      "corroborated_by": [
+        "EC-001 (SG-EVM-012)"
+      ],
+      "independent_confirmation": 1
     },
     {
       "id": "SG-SOL-015",
@@ -1655,7 +1784,12 @@
         "spl",
         "account-ownership",
         "CPI-003"
-      ]
+      ],
+      "corroborated_by": [
+        "MATH-004 (SG-SOL-025)",
+        "SIGNER-002 (SG-SOL-004)"
+      ],
+      "independent_confirmation": 2
     },
     {
       "id": "SG-SOL-016",
@@ -1700,7 +1834,12 @@
         "division-by-zero",
         "availability",
         "MATH-003"
-      ]
+      ],
+      "corroborated_by": [
+        "ACCT-001 (SG-SOL-012)",
+        "ACCT-002 (SG-SOL-006)"
+      ],
+      "independent_confirmation": 1
     },
     {
       "id": "SG-SOL-017",
@@ -1747,7 +1886,9 @@
         "remaining-accounts",
         "panic",
         "REMOT-001"
-      ]
+      ],
+      "corroborated_by": [],
+      "independent_confirmation": 0
     },
     {
       "id": "SG-SOL-018",
@@ -1792,7 +1933,9 @@
         "pda",
         "seeds",
         "ACCT-003"
-      ]
+      ],
+      "corroborated_by": [],
+      "independent_confirmation": 0
     },
     {
       "id": "SG-SOL-019",
@@ -1837,7 +1980,11 @@
         "pda",
         "seeds",
         "ACCT-003"
-      ]
+      ],
+      "corroborated_by": [
+        "AUTH-002 (SG-SOL-024)"
+      ],
+      "independent_confirmation": 1
     },
     {
       "id": "SG-SOL-020",
@@ -1884,7 +2031,9 @@
         "pda",
         "authority",
         "AUTH-001"
-      ]
+      ],
+      "corroborated_by": [],
+      "independent_confirmation": 0
     },
     {
       "id": "SG-EVM-020",
@@ -1928,7 +2077,13 @@
         "signature",
         "deadline",
         "SR-003"
-      ]
+      ],
+      "corroborated_by": [
+        "CEI-001 (SG-EVM-003)",
+        "EC-001 (SG-EVM-010)",
+        "EC-003 (SG-EVM-024)"
+      ],
+      "independent_confirmation": 2
     },
     {
       "id": "SG-EVM-021",
@@ -1972,7 +2127,9 @@
         "unchecked-call",
         "token-recovery",
         "SF-003"
-      ]
+      ],
+      "corroborated_by": [],
+      "independent_confirmation": 0
     },
     {
       "id": "SG-SOL-021",
@@ -2019,7 +2176,12 @@
         "authority",
         "static-note",
         "AUTH-003"
-      ]
+      ],
+      "corroborated_by": [
+        "MATH-002 (SG-SOL-023)",
+        "SIGNER-002 (SG-SOL-003)"
+      ],
+      "independent_confirmation": 2
     },
     {
       "id": "SG-EVM-022",
@@ -2066,7 +2228,9 @@
         "oracle",
         "single-source",
         "OR-003"
-      ]
+      ],
+      "corroborated_by": [],
+      "independent_confirmation": 0
     },
     {
       "id": "SG-SOL-022",
@@ -2113,7 +2277,12 @@
         "overflow",
         "unchecked-math",
         "MATH-002"
-      ]
+      ],
+      "corroborated_by": [
+        "ACCT-001 (SG-SOL-012)",
+        "ACCT-002 (SG-SOL-006)"
+      ],
+      "independent_confirmation": 1
     },
     {
       "id": "SG-SOL-023",
@@ -2160,7 +2329,12 @@
         "overflow",
         "unchecked-math",
         "MATH-002"
-      ]
+      ],
+      "corroborated_by": [
+        "AUTH-003 (SG-SOL-021)",
+        "SIGNER-002 (SG-SOL-003)"
+      ],
+      "independent_confirmation": 2
     },
     {
       "id": "SG-EVM-023",
@@ -2204,7 +2378,13 @@
         "signature",
         "malleability",
         "SR-004"
-      ]
+      ],
+      "corroborated_by": [
+        "CEI-001 (SG-EVM-003)",
+        "EC-001 (SG-EVM-010)",
+        "EC-003 (SG-EVM-024)"
+      ],
+      "independent_confirmation": 2
     },
     {
       "id": "SG-SOL-024",
@@ -2250,7 +2430,11 @@
         "realloc",
         "authority-note",
         "AUTH-002"
-      ]
+      ],
+      "corroborated_by": [
+        "ACCT-003 (SG-SOL-019)"
+      ],
+      "independent_confirmation": 1
     },
     {
       "id": "SG-SOL-025",
@@ -2296,7 +2480,12 @@
         "cast",
         "precision",
         "MATH-004"
-      ]
+      ],
+      "corroborated_by": [
+        "CPI-003 (SG-SOL-015)",
+        "SIGNER-002 (SG-SOL-004)"
+      ],
+      "independent_confirmation": 2
     },
     {
       "id": "SG-EVM-024",
@@ -2340,9 +2529,117 @@
         "gas-stipend",
         "availability",
         "EC-003"
-      ]
+      ],
+      "corroborated_by": [
+        "CEI-001 (SG-EVM-003)",
+        "SR-001 (SG-EVM-017)",
+        "SR-002 (SG-EVM-002)",
+        "SR-003 (SG-EVM-020)",
+        "SR-004 (SG-EVM-023)"
+      ],
+      "independent_confirmation": 2
     }
   ],
+  "orchestration": {
+    "model": "parallel specialist agents -> adjudicator -> report writer",
+    "workers": 5,
+    "agent_runs": [
+      {
+        "agent": "evm-hunter#1",
+        "files_scanned": 1,
+        "findings": 0,
+        "duration_ms": 214,
+        "log": [
+          "evm-hunter#1: 1 file(s), 7 detector(s) [evm_access, evm_delegatecall, evm_external_calls, evm_oracle, evm_reentrancy, evm_selfdestruct, evm_sig_replay]",
+          "evm-hunter#1: done, 0 finding(s) in 214 ms"
+        ]
+      },
+      {
+        "agent": "solana-hunter#1",
+        "files_scanned": 1,
+        "findings": 0,
+        "duration_ms": 21,
+        "log": [
+          "solana-hunter#1: 1 file(s), 6 detector(s) [solana_accounts, solana_authority, solana_cpi, solana_deser, solana_math, solana_signer]",
+          "solana-hunter#1: done, 0 finding(s) in 21 ms"
+        ]
+      },
+      {
+        "agent": "evm-hunter#2",
+        "files_scanned": 1,
+        "findings": 10,
+        "duration_ms": 513,
+        "log": [
+          "evm-hunter#2: 1 file(s), 7 detector(s) [evm_access, evm_delegatecall, evm_external_calls, evm_oracle, evm_reentrancy, evm_selfdestruct, evm_sig_replay]",
+          "  evm_access             solidity/Vault.sol -> 4 finding(s) (303 ms)",
+          "  evm_external_calls     solidity/Vault.sol -> 1 finding(s) (186 ms)",
+          "  evm_oracle             solidity/Vault.sol -> 2 finding(s) (7 ms)",
+          "  evm_reentrancy         solidity/Vault.sol -> 2 finding(s) (6 ms)",
+          "  evm_selfdestruct       solidity/Vault.sol -> 1 finding(s) (4 ms)",
+          "evm-hunter#2: done, 10 finding(s) in 513 ms"
+        ]
+      },
+      {
+        "agent": "evm-hunter#3",
+        "files_scanned": 1,
+        "findings": 14,
+        "duration_ms": 437,
+        "log": [
+          "evm-hunter#3: 1 file(s), 7 detector(s) [evm_access, evm_delegatecall, evm_external_calls, evm_oracle, evm_reentrancy, evm_selfdestruct, evm_sig_replay]",
+          "  evm_access             solidity/HyperVault.sol -> 1 finding(s) (73 ms)",
+          "  evm_delegatecall       solidity/HyperVault.sol -> 2 finding(s) (4 ms)",
+          "  evm_external_calls     solidity/HyperVault.sol -> 2 finding(s) (316 ms)",
+          "  evm_oracle             solidity/HyperVault.sol -> 1 finding(s) (20 ms)",
+          "  evm_reentrancy         solidity/HyperVault.sol -> 1 finding(s) (5 ms)",
+          "  evm_selfdestruct       solidity/HyperVault.sol -> 3 finding(s) (6 ms)",
+          "  evm_sig_replay         solidity/HyperVault.sol -> 4 finding(s) (11 ms)",
+          "evm-hunter#3: done, 14 finding(s) in 437 ms"
+        ]
+      },
+      {
+        "agent": "solana-hunter#2",
+        "files_scanned": 1,
+        "findings": 25,
+        "duration_ms": 397,
+        "log": [
+          "solana-hunter#2: 1 file(s), 6 detector(s) [solana_accounts, solana_authority, solana_cpi, solana_deser, solana_math, solana_signer]",
+          "  solana_accounts        solana/vault/programs/vault/src/lib.rs -> 6 finding(s) (357 ms)",
+          "  solana_authority       solana/vault/programs/vault/src/lib.rs -> 3 finding(s) (10 ms)",
+          "  solana_cpi             solana/vault/programs/vault/src/lib.rs -> 4 finding(s) (8 ms)",
+          "  solana_deser           solana/vault/programs/vault/src/lib.rs -> 1 finding(s) (3 ms)",
+          "  solana_math            solana/vault/programs/vault/src/lib.rs -> 5 finding(s) (12 ms)",
+          "  solana_signer          solana/vault/programs/vault/src/lib.rs -> 6 finding(s) (3 ms)",
+          "solana-hunter#2: done, 25 finding(s) in 397 ms"
+        ]
+      },
+      {
+        "agent": "adjudicator",
+        "files_scanned": 0,
+        "findings": 49,
+        "duration_ms": 0,
+        "log": [
+          "cross-checking 49 finding(s) from 13 independent detector pass(es)",
+          "30 finding(s) independently confirmed by another detector",
+          "best-corroborated site: solidity/HyperVault.sol:87 (claimTreasuryGrant) <- 3 rules",
+          "7 site(s) where detectors disagree on severity (kept as separate findings, not averaged)"
+        ]
+      },
+      {
+        "agent": "report-writer",
+        "files_scanned": 0,
+        "findings": 49,
+        "duration_ms": 0,
+        "log": [
+          "validating 49 finding(s) against the output contract",
+          "severity distribution: critical=16, high=18, medium=12, low=3",
+          "contract check: 49/49 complete",
+          "all findings resolve to a skill pack under skills/"
+        ]
+      }
+    ],
+    "corroborated_findings": 30,
+    "note": "hunters are sharded by file and run concurrently; the adjudicator only annotates corroboration and never changes a grade"
+  },
   "demo_metrics": {
     "seeded_total": 17,
     "caught": 17,
@@ -2557,41 +2854,83 @@
   },
   "agent_runs": [
     {
-      "agent": "solana-hunter",
-      "files_scanned": 2,
-      "findings": 25,
-      "duration_ms": 1286,
+      "agent": "evm-hunter#1",
+      "files_scanned": 1,
+      "findings": 0,
+      "duration_ms": 214,
       "log": [
-        "solana-hunter: 2 file(s), 6 detector(s) [solana_accounts, solana_authority, solana_cpi, solana_deser, solana_math, solana_signer]",
-        "  solana_accounts        solana/vault/programs/vault/src/lib.rs -> 6 finding(s) (338 ms)",
-        "  solana_authority       solana/vault/programs/vault/src/lib.rs -> 3 finding(s) (17 ms)",
-        "  solana_cpi             solana/vault/programs/vault/src/lib.rs -> 4 finding(s) (8 ms)",
-        "  solana_deser           solana/vault/programs/vault/src/lib.rs -> 1 finding(s) (10 ms)",
-        "  solana_math            solana/vault/programs/vault/src/lib.rs -> 5 finding(s) (226 ms)",
-        "  solana_signer          solana/vault/programs/vault/src/lib.rs -> 6 finding(s) (57 ms)",
-        "solana-hunter: done, 25 finding(s) in 1286 ms"
+        "evm-hunter#1: 1 file(s), 7 detector(s) [evm_access, evm_delegatecall, evm_external_calls, evm_oracle, evm_reentrancy, evm_selfdestruct, evm_sig_replay]",
+        "evm-hunter#1: done, 0 finding(s) in 214 ms"
       ]
     },
     {
-      "agent": "evm-hunter",
-      "files_scanned": 3,
-      "findings": 24,
-      "duration_ms": 1316,
+      "agent": "solana-hunter#1",
+      "files_scanned": 1,
+      "findings": 0,
+      "duration_ms": 21,
       "log": [
-        "evm-hunter: 3 file(s), 7 detector(s) [evm_access, evm_delegatecall, evm_external_calls, evm_oracle, evm_reentrancy, evm_selfdestruct, evm_sig_replay]",
-        "  evm_access             solidity/HyperVault.sol -> 1 finding(s) (24 ms)",
-        "  evm_delegatecall       solidity/HyperVault.sol -> 2 finding(s) (5 ms)",
-        "  evm_external_calls     solidity/HyperVault.sol -> 2 finding(s) (282 ms)",
-        "  evm_oracle             solidity/HyperVault.sol -> 1 finding(s) (11 ms)",
-        "  evm_reentrancy         solidity/HyperVault.sol -> 1 finding(s) (4 ms)",
-        "  evm_selfdestruct       solidity/HyperVault.sol -> 3 finding(s) (12 ms)",
-        "  evm_sig_replay         solidity/HyperVault.sol -> 4 finding(s) (10 ms)",
-        "  evm_access             solidity/Vault.sol -> 4 finding(s) (20 ms)",
-        "  evm_external_calls     solidity/Vault.sol -> 1 finding(s) (249 ms)",
+        "solana-hunter#1: 1 file(s), 6 detector(s) [solana_accounts, solana_authority, solana_cpi, solana_deser, solana_math, solana_signer]",
+        "solana-hunter#1: done, 0 finding(s) in 21 ms"
+      ]
+    },
+    {
+      "agent": "evm-hunter#2",
+      "files_scanned": 1,
+      "findings": 10,
+      "duration_ms": 513,
+      "log": [
+        "evm-hunter#2: 1 file(s), 7 detector(s) [evm_access, evm_delegatecall, evm_external_calls, evm_oracle, evm_reentrancy, evm_selfdestruct, evm_sig_replay]",
+        "  evm_access             solidity/Vault.sol -> 4 finding(s) (303 ms)",
+        "  evm_external_calls     solidity/Vault.sol -> 1 finding(s) (186 ms)",
         "  evm_oracle             solidity/Vault.sol -> 2 finding(s) (7 ms)",
-        "  evm_reentrancy         solidity/Vault.sol -> 2 finding(s) (5 ms)",
-        "  evm_selfdestruct       solidity/Vault.sol -> 1 finding(s) (7 ms)",
-        "evm-hunter: done, 24 finding(s) in 1316 ms"
+        "  evm_reentrancy         solidity/Vault.sol -> 2 finding(s) (6 ms)",
+        "  evm_selfdestruct       solidity/Vault.sol -> 1 finding(s) (4 ms)",
+        "evm-hunter#2: done, 10 finding(s) in 513 ms"
+      ]
+    },
+    {
+      "agent": "evm-hunter#3",
+      "files_scanned": 1,
+      "findings": 14,
+      "duration_ms": 437,
+      "log": [
+        "evm-hunter#3: 1 file(s), 7 detector(s) [evm_access, evm_delegatecall, evm_external_calls, evm_oracle, evm_reentrancy, evm_selfdestruct, evm_sig_replay]",
+        "  evm_access             solidity/HyperVault.sol -> 1 finding(s) (73 ms)",
+        "  evm_delegatecall       solidity/HyperVault.sol -> 2 finding(s) (4 ms)",
+        "  evm_external_calls     solidity/HyperVault.sol -> 2 finding(s) (316 ms)",
+        "  evm_oracle             solidity/HyperVault.sol -> 1 finding(s) (20 ms)",
+        "  evm_reentrancy         solidity/HyperVault.sol -> 1 finding(s) (5 ms)",
+        "  evm_selfdestruct       solidity/HyperVault.sol -> 3 finding(s) (6 ms)",
+        "  evm_sig_replay         solidity/HyperVault.sol -> 4 finding(s) (11 ms)",
+        "evm-hunter#3: done, 14 finding(s) in 437 ms"
+      ]
+    },
+    {
+      "agent": "solana-hunter#2",
+      "files_scanned": 1,
+      "findings": 25,
+      "duration_ms": 397,
+      "log": [
+        "solana-hunter#2: 1 file(s), 6 detector(s) [solana_accounts, solana_authority, solana_cpi, solana_deser, solana_math, solana_signer]",
+        "  solana_accounts        solana/vault/programs/vault/src/lib.rs -> 6 finding(s) (357 ms)",
+        "  solana_authority       solana/vault/programs/vault/src/lib.rs -> 3 finding(s) (10 ms)",
+        "  solana_cpi             solana/vault/programs/vault/src/lib.rs -> 4 finding(s) (8 ms)",
+        "  solana_deser           solana/vault/programs/vault/src/lib.rs -> 1 finding(s) (3 ms)",
+        "  solana_math            solana/vault/programs/vault/src/lib.rs -> 5 finding(s) (12 ms)",
+        "  solana_signer          solana/vault/programs/vault/src/lib.rs -> 6 finding(s) (3 ms)",
+        "solana-hunter#2: done, 25 finding(s) in 397 ms"
+      ]
+    },
+    {
+      "agent": "adjudicator",
+      "files_scanned": 0,
+      "findings": 49,
+      "duration_ms": 0,
+      "log": [
+        "cross-checking 49 finding(s) from 13 independent detector pass(es)",
+        "30 finding(s) independently confirmed by another detector",
+        "best-corroborated site: solidity/HyperVault.sol:87 (claimTreasuryGrant) <- 3 rules",
+        "7 site(s) where detectors disagree on severity (kept as separate findings, not averaged)"
       ]
     },
     {

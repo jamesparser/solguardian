@@ -41,7 +41,7 @@ solguardian/
                scanner, scorecard, text utilities (comment/string masking)
   detectors/   one module per exploit class; registered via @register
   report/      report.json / report.md / report.html + PoC stub templates
-  agents/      EvmHunter, SolanaHunter, ReportWriter + the parallel orchestrator
+  agents/      EvmHunter, SolanaHunter (file-sharded), Adjudicator, ReportWriter + orchestrator
 skills/        one SKILL.md per exploit class - the verified checklists
 samples/       synthetic seeded targets + EXPECT_FINDINGS.json (ground truth)
 tests/         stdlib unittest suite: contract, ground truth, CLI, performance
@@ -71,17 +71,41 @@ Grading and ranking rules are authoritative in `skills/severity-grading/SKILL.md
 - A detector raising must never abort the run: `agents/base.py` catches and logs.
 - Python 3.8+ compatible, standard library only. No build step, no Docker.
 
+## Agents and concurrency
+
+`solguardian/agents/` runs specialists concurrently: hunters are **file-sharded** (one worker per
+shard, largest-first bin packing), then an `adjudicator` cross-checks, then `report-writer` gates
+the output contract. Rules for working on this layer:
+
+- An agent must hold **no shared mutable state** - the same class has to work in a thread and in a
+  pickled child process. Worker callables must be module-level functions (a bound method or lambda
+  cannot be pickled).
+- Ranking must never depend on **arrival order**. Merge through `core.scanner.dedupe()`, which uses
+  a total order key; that is what makes sharded and process runs produce identical ids and PoC
+  filenames. Verify with `python3 tools/scale_check.py`.
+- `--backend processes` is opt-in for library callers: on macOS/Windows `spawn` re-imports the
+  caller's `__main__`, so an unguarded script would recursively spawn processes. Only the CLI
+  passes `allow_processes=True`.
+- The adjudicator is **annotation-only**. It may record corroboration
+  (`finding.corroborated_by`, `finding.independent_confirmation`) but must never change severity
+  or confidence. `test_adjudicator_cannot_promote_its_own_guesses` enforces this - do not edit it
+  to make a change pass.
+
 ## Commands
 
 ```bash
 python3 -m solguardian analyze samples/solidity/Vault.sol      # single file
 python3 -m solguardian analyze samples/solana/vault            # directory
 python3 -m solguardian analyze samples --out out/samples --html
+python3 -m solguardian analyze samples --workers 4             # fan out over file shards
+python3 -m solguardian analyze samples --backend processes     # remove the GIL ceiling
 python3 -m solguardian demo                                    # one-command demo
-python3 -m solguardian list                                    # detectors + skill packs
+python3 -m solguardian list                                    # agents + detectors + skill packs
 python3 -m solguardian analyze samples --fail-on critical; echo $?   # CI gate -> 1
 
 python3 -m unittest discover -s tests -v                       # full suite
+python3 tools/recall_gate.py                                   # CI: recall + precision + perf
+python3 tools/scale_check.py --files 24                         # serial == threads == processes
 pip install -e .                                               # gives you `solguardian`
 ```
 

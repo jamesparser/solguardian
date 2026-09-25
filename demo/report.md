@@ -3,7 +3,7 @@
 - **Tool:** SolGuardian 0.1.0 (static heuristics + AST-lite; no ML, no network)
 - **Target:** `samples` (5 files, 935 lines)
 - **Detectors run:** 13
-- **Time to full report:** 1.45 s
+- **Time to full report:** 0.67 s
 - **Findings:** 49 (16 critical, 18 high, 12 medium, 3 low)
 
 ## Demo metrics (ground truth)
@@ -37,11 +37,19 @@
 
 ## Agent pipeline
 
-| agent | files | findings | ms |
-| --- | ---: | ---: | ---: |
-| solana-hunter | 2 | 25 | 1286 |
-| evm-hunter | 3 | 24 | 1316 |
-| report-writer | - | 49 | 0 |
+7 agent run(s): 5 sharded hunter(s) scanning concurrently across 2 ecosystem(s), then an adjudicator cross-check, then the report writer.
+
+| agent | role | files | findings | ms |
+| --- | --- | ---: | ---: | ---: |
+| `evm-hunter#1` | scan shard (parallel) | 1 | - | 214 |
+| `solana-hunter#1` | scan shard (parallel) | 1 | - | 21 |
+| `evm-hunter#2` | scan shard (parallel) | 1 | 10 | 513 |
+| `evm-hunter#3` | scan shard (parallel) | 1 | 14 | 437 |
+| `solana-hunter#2` | scan shard (parallel) | 1 | 25 | 397 |
+| `adjudicator` | cross-check / corroboration | - | 49 | 0 |
+| `report-writer` | output-contract gate | - | 49 | 0 |
+
+`30` finding(s) were independently confirmed by a second detector; the adjudicator records that agreement as an annotation and never changes a grade.
 
 ## Ranked findings
 
@@ -147,6 +155,7 @@ tags: `delegatecall`, `upgradeability`, `DC-001`
 | confidence | 0.90 |
 | rank score | 8.64 |
 | rule / detector | DESER-001 / solana_deser |
+| corroborated independently by | 1 other detector(s), 1 rule(s): `ACCT-001 (SG-SOL-014)` |
 | chain | solana |
 | location | `solana/vault/programs/vault/src/lib.rs:117 (load_foreign_config)` |
 | cwe | CWE-125 |
@@ -187,6 +196,7 @@ tags: `solana`, `unsafe`, `deserialization`, `DESER-001`
 | confidence | 0.90 |
 | rank score | 8.64 |
 | rule / detector | SR-002 / evm_sig_replay |
+| corroborated independently by | 2 other detector(s), 3 rule(s): `CEI-001 (SG-EVM-003)`, `EC-001 (SG-EVM-010)`, `EC-003 (SG-EVM-024)` |
 | chain | hyperevm |
 | location | `solidity/HyperVault.sol:87 (claimTreasuryGrant)` |
 | cwe | CWE-294 |
@@ -226,6 +236,7 @@ tags: `signature`, `replay`, `missing-nonce`, `SR-002`
 | confidence | 0.90 |
 | rank score | 8.64 |
 | rule / detector | CEI-001 / evm_reentrancy |
+| corroborated independently by | 2 other detector(s), 6 rule(s): `EC-001 (SG-EVM-010)`, `EC-003 (SG-EVM-024)`, `SR-001 (SG-EVM-017)`, `SR-002 (SG-EVM-002)`, `SR-003 (SG-EVM-020)`, `SR-004 (SG-EVM-023)` |
 | chain | hyperevm |
 | location | `solidity/HyperVault.sol:90 (claimTreasuryGrant)` |
 | cwe | CWE-841 |
@@ -351,6 +362,7 @@ tags: `reentrancy`, `eth`, `value-transfer`, `CEI-001`
 | confidence | 0.90 |
 | rank score | 8.64 |
 | rule / detector | AC-001 / evm_access |
+| corroborated independently by | 2 other detector(s), 2 rule(s): `CEI-001 (SG-EVM-007)`, `SD-002 (SG-EVM-009)` |
 | chain | evm |
 | location | `solidity/Vault.sol:83 (adminDrain)` |
 | cwe | CWE-284 |
@@ -391,6 +403,7 @@ tags: `access-control`, `value-flow`, `AC-001`
 | confidence | 0.90 |
 | rank score | 8.64 |
 | rule / detector | CEI-001 / evm_reentrancy |
+| corroborated independently by | 2 other detector(s), 2 rule(s): `AC-001 (SG-EVM-006)`, `SD-002 (SG-EVM-009)` |
 | chain | evm |
 | location | `solidity/Vault.sol:85 (adminDrain)` |
 | cwe | CWE-841 |
@@ -516,6 +529,7 @@ tags: `oracle`, `price-manipulation`, `flash-loan`, `OR-001`
 | confidence | 0.85 |
 | rank score | 8.46 |
 | rule / detector | SIGNER-002 / solana_signer |
+| corroborated independently by | 2 other detector(s), 2 rule(s): `AUTH-003 (SG-SOL-021)`, `MATH-002 (SG-SOL-023)` |
 | chain | solana |
 | location | `solana/vault/programs/vault/src/lib.rs:54 (withdraw)` |
 | cwe | CWE-287 |
@@ -553,6 +567,7 @@ tags: `solana`, `missing-signer`, `privilege`, `SIGNER-002`
 | confidence | 0.85 |
 | rank score | 8.46 |
 | rule / detector | SIGNER-002 / solana_signer |
+| corroborated independently by | 2 other detector(s), 2 rule(s): `CPI-003 (SG-SOL-015)`, `MATH-004 (SG-SOL-025)` |
 | chain | solana |
 | location | `solana/vault/programs/vault/src/lib.rs:68 (slash)` |
 | cwe | CWE-287 |
@@ -627,6 +642,7 @@ tags: `solana`, `missing-signer`, `privilege`, `SIGNER-002`
 | confidence | 0.80 |
 | rank score | 8.28 |
 | rule / detector | ACCT-002 / solana_accounts |
+| corroborated independently by | 1 other detector(s), 3 rule(s): `MATH-001 (SG-SOL-010)`, `MATH-002 (SG-SOL-022)`, `MATH-003 (SG-SOL-016)` |
 | chain | solana |
 | location | `solana/vault/programs/vault/src/lib.rs:39 (deposit)` |
 | cwe | CWE-863 |
@@ -664,6 +680,7 @@ tags: `solana`, `cpi`, `account-validation`, `ACCT-002`
 | confidence | 0.80 |
 | rank score | 8.28 |
 | rule / detector | CPI-002 / solana_cpi |
+| corroborated independently by | 1 other detector(s), 1 rule(s): `ACCT-001 (SG-SOL-013)` |
 | chain | solana |
 | location | `solana/vault/programs/vault/src/lib.rs:208 (settle_external)` |
 | cwe | CWE-252 |
@@ -703,6 +720,7 @@ tags: `solana`, `cpi`, `program-validation`, `CPI-002`
 | confidence | 0.80 |
 | rank score | 8.28 |
 | rule / detector | SD-002 / evm_selfdestruct |
+| corroborated independently by | 2 other detector(s), 2 rule(s): `AC-001 (SG-EVM-006)`, `CEI-001 (SG-EVM-007)` |
 | chain | evm |
 | location | `solidity/Vault.sol:85 (adminDrain)` |
 | cwe | CWE-284 |
@@ -820,6 +838,7 @@ tags: `solana`, `missing-signer`, `SIGNER-001`
 | confidence | 0.85 |
 | rank score | 6.11 |
 | rule / detector | MATH-001 / solana_math |
+| corroborated independently by | 1 other detector(s), 2 rule(s): `ACCT-001 (SG-SOL-012)`, `ACCT-002 (SG-SOL-006)` |
 | chain | solana |
 | location | `solana/vault/programs/vault/src/lib.rs:31 (deposit)` |
 | cwe | CWE-682 |
@@ -860,6 +879,7 @@ tags: `solana`, `precision`, `accounting`, `MATH-001`
 | confidence | 0.85 |
 | rank score | 6.11 |
 | rule / detector | CPI-001 / solana_cpi |
+| corroborated independently by | 1 other detector(s), 1 rule(s): `ACCT-001 (SG-SOL-013)` |
 | chain | solana |
 | location | `solana/vault/programs/vault/src/lib.rs:94 (settle_external)` |
 | cwe | CWE-252 |
@@ -899,6 +919,7 @@ tags: `solana`, `cpi`, `unchecked`, `CPI-001`
 | confidence | 0.85 |
 | rank score | 6.11 |
 | rule / detector | EC-001 / evm_external_calls |
+| corroborated independently by | 2 other detector(s), 5 rule(s): `CEI-001 (SG-EVM-003)`, `SR-001 (SG-EVM-017)`, `SR-002 (SG-EVM-002)`, `SR-003 (SG-EVM-020)`, `SR-004 (SG-EVM-023)` |
 | chain | hyperevm |
 | location | `solidity/HyperVault.sol:89 (claimTreasuryGrant)` |
 | cwe | CWE-252 |
@@ -976,6 +997,7 @@ tags: `access-control`, `tx-origin`, `AC-002`
 | confidence | 0.85 |
 | rank score | 6.11 |
 | rule / detector | EC-001 / evm_external_calls |
+| corroborated independently by | 1 other detector(s), 1 rule(s): `AC-001 (SG-EVM-019)` |
 | chain | evm |
 | location | `solidity/Vault.sol:111 (refundPending)` |
 | cwe | CWE-252 |
@@ -1132,6 +1154,7 @@ tags: `access-control`, `config`, `AC-003`
 | confidence | 0.80 |
 | rank score | 5.98 |
 | rule / detector | ACCT-001 / solana_accounts |
+| corroborated independently by | 1 other detector(s), 3 rule(s): `MATH-001 (SG-SOL-010)`, `MATH-002 (SG-SOL-022)`, `MATH-003 (SG-SOL-016)` |
 | chain | solana |
 | location | `solana/vault/programs/vault/src/lib.rs:154 (deposit)` |
 | cwe | CWE-863 |
@@ -1172,6 +1195,7 @@ tags: `solana`, `account-validation`, `type-confusion`, `ACCT-001`
 | confidence | 0.80 |
 | rank score | 5.98 |
 | rule / detector | ACCT-001 / solana_accounts |
+| corroborated independently by | 1 other detector(s), 2 rule(s): `CPI-001 (SG-SOL-011)`, `CPI-002 (SG-SOL-007)` |
 | chain | solana |
 | location | `solana/vault/programs/vault/src/lib.rs:208 (settle_external)` |
 | cwe | CWE-863 |
@@ -1212,6 +1236,7 @@ tags: `solana`, `account-validation`, `type-confusion`, `ACCT-001`
 | confidence | 0.80 |
 | rank score | 5.98 |
 | rule / detector | ACCT-001 / solana_accounts |
+| corroborated independently by | 1 other detector(s), 1 rule(s): `DESER-001 (SG-SOL-001)` |
 | chain | solana |
 | location | `solana/vault/programs/vault/src/lib.rs:217 (load_foreign_config)` |
 | cwe | CWE-863 |
@@ -1290,6 +1315,7 @@ tags: `delegatecall`, `proxy`, `storage-collision`, `DC-002`
 | confidence | 0.80 |
 | rank score | 5.98 |
 | rule / detector | SR-001 / evm_sig_replay |
+| corroborated independently by | 2 other detector(s), 3 rule(s): `CEI-001 (SG-EVM-003)`, `EC-001 (SG-EVM-010)`, `EC-003 (SG-EVM-024)` |
 | chain | hyperevm |
 | location | `solidity/HyperVault.sol:88 (claimTreasuryGrant)` |
 | cwe | CWE-294 |
@@ -1366,6 +1392,7 @@ tags: `stuck-funds`, `unreachable-guard`, `SF-001`
 | confidence | 0.75 |
 | rank score | 5.85 |
 | rule / detector | AC-001 / evm_access |
+| corroborated independently by | 1 other detector(s), 1 rule(s): `EC-001 (SG-EVM-012)` |
 | chain | evm |
 | location | `solidity/Vault.sol:106 (refundPending)` |
 | cwe | CWE-284 |
@@ -1406,6 +1433,7 @@ tags: `access-control`, `value-flow`, `AC-001`
 | confidence | 0.70 |
 | rank score | 5.72 |
 | rule / detector | CPI-003 / solana_cpi |
+| corroborated independently by | 2 other detector(s), 2 rule(s): `MATH-004 (SG-SOL-025)`, `SIGNER-002 (SG-SOL-004)` |
 | chain | solana |
 | location | `solana/vault/programs/vault/src/lib.rs:68 (slash)` |
 | cwe | CWE-252 |
@@ -1444,6 +1472,7 @@ tags: `solana`, `spl`, `account-ownership`, `CPI-003`
 | confidence | 0.80 |
 | rank score | 3.68 |
 | rule / detector | MATH-003 / solana_math |
+| corroborated independently by | 1 other detector(s), 2 rule(s): `ACCT-001 (SG-SOL-012)`, `ACCT-002 (SG-SOL-006)` |
 | chain | solana |
 | location | `solana/vault/programs/vault/src/lib.rs:31 (deposit)` |
 | cwe | CWE-682 |
@@ -1557,6 +1586,7 @@ tags: `solana`, `pda`, `seeds`, `ACCT-003`
 | confidence | 0.75 |
 | rank score | 3.60 |
 | rule / detector | ACCT-003 / solana_accounts |
+| corroborated independently by | 1 other detector(s), 1 rule(s): `AUTH-002 (SG-SOL-024)` |
 | chain | solana |
 | location | `solana/vault/programs/vault/src/lib.rs:169` |
 | cwe | CWE-863 |
@@ -1633,6 +1663,7 @@ tags: `solana`, `pda`, `authority`, `AUTH-001`
 | confidence | 0.70 |
 | rank score | 3.52 |
 | rule / detector | SR-003 / evm_sig_replay |
+| corroborated independently by | 2 other detector(s), 3 rule(s): `CEI-001 (SG-EVM-003)`, `EC-001 (SG-EVM-010)`, `EC-003 (SG-EVM-024)` |
 | chain | hyperevm |
 | location | `solidity/HyperVault.sol:87 (claimTreasuryGrant)` |
 | cwe | CWE-294 |
@@ -1707,6 +1738,7 @@ tags: `unchecked-call`, `token-recovery`, `SF-003`
 | confidence | 0.65 |
 | rank score | 3.44 |
 | rule / detector | AUTH-003 / solana_authority |
+| corroborated independently by | 2 other detector(s), 2 rule(s): `MATH-002 (SG-SOL-023)`, `SIGNER-002 (SG-SOL-003)` |
 | chain | solana |
 | location | `solana/vault/programs/vault/src/lib.rs:174 (withdraw)` |
 | cwe | CWE-269 |
@@ -1786,6 +1818,7 @@ tags: `oracle`, `single-source`, `OR-003`
 | confidence | 0.60 |
 | rank score | 3.36 |
 | rule / detector | MATH-002 / solana_math |
+| corroborated independently by | 1 other detector(s), 2 rule(s): `ACCT-001 (SG-SOL-012)`, `ACCT-002 (SG-SOL-006)` |
 | chain | solana |
 | location | `solana/vault/programs/vault/src/lib.rs:33 (deposit)` |
 | cwe | CWE-682 |
@@ -1825,6 +1858,7 @@ tags: `solana`, `overflow`, `unchecked-math`, `MATH-002`
 | confidence | 0.60 |
 | rank score | 3.36 |
 | rule / detector | MATH-002 / solana_math |
+| corroborated independently by | 2 other detector(s), 2 rule(s): `AUTH-003 (SG-SOL-021)`, `SIGNER-002 (SG-SOL-003)` |
 | chain | solana |
 | location | `solana/vault/programs/vault/src/lib.rs:55 (withdraw)` |
 | cwe | CWE-682 |
@@ -1864,6 +1898,7 @@ tags: `solana`, `overflow`, `unchecked-math`, `MATH-002`
 | confidence | 0.60 |
 | rank score | 3.36 |
 | rule / detector | SR-004 / evm_sig_replay |
+| corroborated independently by | 2 other detector(s), 3 rule(s): `CEI-001 (SG-EVM-003)`, `EC-001 (SG-EVM-010)`, `EC-003 (SG-EVM-024)` |
 | chain | hyperevm |
 | location | `solidity/HyperVault.sol:88 (claimTreasuryGrant)` |
 | cwe | CWE-294 |
@@ -1901,6 +1936,7 @@ tags: `signature`, `malleability`, `SR-004`
 | confidence | 0.60 |
 | rank score | 1.68 |
 | rule / detector | AUTH-002 / solana_authority |
+| corroborated independently by | 1 other detector(s), 1 rule(s): `ACCT-003 (SG-SOL-019)` |
 | chain | solana |
 | location | `solana/vault/programs/vault/src/lib.rs:169` |
 | cwe | CWE-269 |
@@ -1939,6 +1975,7 @@ tags: `solana`, `realloc`, `authority-note`, `AUTH-002`
 | confidence | 0.50 |
 | rank score | 1.60 |
 | rule / detector | MATH-004 / solana_math |
+| corroborated independently by | 2 other detector(s), 2 rule(s): `CPI-003 (SG-SOL-015)`, `SIGNER-002 (SG-SOL-004)` |
 | chain | solana |
 | location | `solana/vault/programs/vault/src/lib.rs:67 (slash)` |
 | cwe | CWE-682 |
@@ -1977,6 +2014,7 @@ tags: `solana`, `cast`, `precision`, `MATH-004`
 | confidence | 0.50 |
 | rank score | 1.60 |
 | rule / detector | EC-003 / evm_external_calls |
+| corroborated independently by | 2 other detector(s), 5 rule(s): `CEI-001 (SG-EVM-003)`, `SR-001 (SG-EVM-017)`, `SR-002 (SG-EVM-002)`, `SR-003 (SG-EVM-020)`, `SR-004 (SG-EVM-023)` |
 | chain | hyperevm |
 | location | `solidity/HyperVault.sol:90 (claimTreasuryGrant)` |
 | cwe | CWE-252 |
@@ -2014,6 +2052,7 @@ tags: `gas-stipend`, `availability`, `EC-003`
 - Detectors are deterministic code (see `solguardian/detectors/`), so this report reproduces byte-for-byte without spending model tokens.
 - No live exploit code is emitted: PoC files are commented skeletons against the synthetic samples in `samples/`.
 - Proof-of-storage, gas-cost modelling, and cross-contract composition are out of scope by design (see README).
+- The **adjudicator** agent records where two independent detectors agree, but it is annotation-only: it cannot raise a severity or a confidence. Agreement is a triage signal, not evidence, and a site where detectors disagree on grade is reported as two findings rather than averaged into one.
 
 ## Skill packs used
 

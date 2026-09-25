@@ -30,3 +30,10 @@ TestGroundTruth.test_negative_cases_not_flagged.
 
 Before screenshotting: show the subagent panel with 3 concurrent agents, then
 `python3 -m solguardian analyze samples/solana` output.
+
+**Follow-up worth the same screenshot:** this three-way split is what the shipped CLI does too —
+`solguardian/agents/` fans each hunter out over file shards (so `--workers 8` on a monorepo runs
+eight concurrently), then an `adjudicator` cross-checks corroboration and `report-writer` gates the
+output contract. Run `solguardian analyze samples --workers 4` right after the subagents finish and
+capture both: it shows Bob's agent workflow becoming the product's architecture, which is exactly
+the "developer-workflow improvement" the rubric rewards.

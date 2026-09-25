@@ -65,9 +65,11 @@ open out/samples/report.html</code></pre>
   <h2>Results on the seeded sample set</h2>
   <div class="cards">
     <div class="card"><b>17/17</b><small>planted issues caught<br>(Solidity · HyperEVM · Anchor)</small></div>
-    <div class="card"><b>0.8s</b><small>508 lines → full report<br>+ 53 PoC stubs</small></div>
+    <div class="card"><b>0.9s</b><small>935 lines → full report<br>+ 49 PoC stubs</small></div>
     <div class="card"><b>13</b><small>deterministic detectors<br>7 EVM/HyperEVM · 6 Solana</small></div>
+    <div class="card"><b>N×</b><small>concurrent file-sharded<br>agents + adjudicator</small></div>
     <div class="card"><b>14</b><small>skill packs: the checklists<br>every finding cites</small></div>
+    <div class="card"><b>0</b><small>findings on the written-correct<br>negative control</small></div>
   </div>
 </section>
 
@@ -105,6 +107,10 @@ open out/samples/report.html</code></pre>
 <section>
   <h2>Why it is explainable</h2>
   <ul>
+    <li><b>Multi-agent, and provably order-independent.</b> One hunter per file shard runs
+      concurrently, then an adjudicator cross-checks and a writer gates the output contract.
+      Serial, threaded and process-parallel runs return byte-identical findings (24-contract
+      corpus, medians: 5.1 s &rarr; 4.5 s &rarr; 2.0 s), so parallelism cannot change a report.</li>
     <li><b>Skill packs, not vibes.</b> Each finding cites the checklist in <code>skills/</code> it
       enforced and lists the items it satisfied — you can argue with the rule.</li>
     <li><b>Comments cannot create findings.</b> Every detector matches a masked copy of the source
