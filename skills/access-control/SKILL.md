@@ -14,21 +14,16 @@ addresses, implementations, pauses, mints, burns, or moves funds out.
 
 ## Checklist
 1. Build the list of externally callable functions and mark which ones mutate privileged state.
-2. Each privileged function has either a modifier (`onlyOwner`, `onlyRole`, `onlyAdmin`)
-   or an explicit first-statement `require(msg.sender == ...)`.
-3. `tx.origin` is **never** the authorisation basis (`msg.sender` is the caller).
-4. Role grants/renouncements are themselves guarded, and no role is left unassigned.
-5. Initialise-only functions (`initialize`, `setParams`, first-deploy setters) cannot be
-   re-called by anyone after setup.
-6. Upgradability surface: who can change `implementation`/`beacon`/`admin`? Is there a
-   timelock and an event?
-7. The finding names the exact entry point and the state it lets an unauthorised caller write.
+2. Each privileged function has either a modifier (`onlyOwner`, `onlyRole`, `onlyAdmin`) or an explicit first-statement `require(msg.sender == ...)`.
+3. `tx.origin` is **never** the authorisation basis — `msg.sender` is the correct caller identity.
+4. Role grants and renouncements are themselves guarded, and no role is left permanently unassigned.
+5. Initialise-only functions (`initialize`, `setParams`, first-deploy setters) cannot be re-called by anyone after setup.
+6. Upgradability surface: `implementation`, `beacon`, and `admin` pointers are changeable only by a timelocked governance role with an `Upgraded` event.
+7. The finding names the exact entry point and the privileged state an unauthorised caller can write.
 
 ## Severity guidance
-- **critical**: unauthenticated function that moves funds or empties the contract
-  (drain / decommission / unguarded `selfdestruct` path).
-- **high**: unauthenticated write to a security-critical pointer (oracle, implementation,
-  reserve factor, fee).
+- **critical**: unauthenticated function that moves funds or empties the contract (drain / decommission / unguarded `selfdestruct` path).
+- **high**: unauthenticated write to a security-critical pointer (oracle, implementation, reserve factor, fee).
 - **medium**: unauthenticated write to a non-critical parameter; `tx.origin` auth.
 - **low/info**: missing event on an admin action, naming that hides the guard.
 
@@ -39,5 +34,4 @@ addresses, implementations, pauses, mints, burns, or moves funds out.
 - Functions guarded by the *proxy* admin rather than the implementation.
 
 ## Required output fields
-`id, severity, confidence, location, explanation, exploit sketch, Foundry PoC stub,
-patch sketch, checklist items, plus who SHOULD be able to call it.`
+`id, severity, confidence, location, explanation, exploit sketch, Foundry PoC stub, patch sketch, checklist items, plus who SHOULD be able to call it.`

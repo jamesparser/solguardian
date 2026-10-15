@@ -3,7 +3,7 @@
 - **Tool:** SolGuardian 0.1.0 (static heuristics + AST-lite; no ML, no network)
 - **Target:** `samples` (5 files, 935 lines)
 - **Detectors run:** 13
-- **Time to full report:** 0.67 s
+- **Time to full report:** 0.31 s
 - **Findings:** 49 (16 critical, 18 high, 12 medium, 3 low)
 
 ## Demo metrics (ground truth)
@@ -41,11 +41,11 @@
 
 | agent | role | files | findings | ms |
 | --- | --- | ---: | ---: | ---: |
-| `evm-hunter#1` | scan shard (parallel) | 1 | - | 214 |
-| `solana-hunter#1` | scan shard (parallel) | 1 | - | 21 |
-| `evm-hunter#2` | scan shard (parallel) | 1 | 10 | 513 |
-| `evm-hunter#3` | scan shard (parallel) | 1 | 14 | 437 |
-| `solana-hunter#2` | scan shard (parallel) | 1 | 25 | 397 |
+| `evm-hunter#1` | scan shard (parallel) | 1 | - | 101 |
+| `solana-hunter#1` | scan shard (parallel) | 1 | - | 14 |
+| `evm-hunter#3` | scan shard (parallel) | 1 | 14 | 203 |
+| `solana-hunter#2` | scan shard (parallel) | 1 | 25 | 182 |
+| `evm-hunter#2` | scan shard (parallel) | 1 | 10 | 256 |
 | `adjudicator` | cross-check / corroboration | - | 49 | 0 |
 | `report-writer` | output-contract gate | - | 49 | 0 |
 
@@ -142,8 +142,8 @@ migrate() executes `target.delegatecall(...)`. the delegatecall target `target` 
 
 **Skill checklist satisfied**
 
-- [x] The delegatecall target resolves to a constant or admin-upgraded implementation address -
-- [x] Writes to logic pointers are guarded by an admin role **and** a timelock/delay, and emit an
+- [x] The delegatecall target resolves to a constant or admin-upgraded implementation address — never a raw user argument.
+- [x] Writes to logic pointers are guarded by an admin role **and** a timelock/delay, and emit an `Upgraded` event.
 
 tags: `delegatecall`, `upgradeability`, `DC-001`
 
@@ -183,8 +183,8 @@ let cfg: &VaultConfig = unsafe { &*(data.as_ptr() as *const VaultConfig) };
 
 **Skill checklist satisfied**
 
-- [x] SPL accounts assert `owner == token_program`, the right `mint`, and the expected authority
-- [x] `remaining_accounts` are length-checked **before** indexing and validated individually -
+- [x] Accounts that must belong to the program are `Account<'info, T>` — never `UncheckedAccount` or raw `AccountInfo` — so Anchor checks owner and discriminator.
+- [x] `remaining_accounts` are length-checked **before** indexing and validated individually — Anchor does not check them.
 
 tags: `solana`, `unsafe`, `deserialization`, `DESER-001`
 
@@ -223,7 +223,7 @@ function claimTreasuryGrant(bytes32 doc, uint8 v, bytes32 r, bytes32 s, uint256 
 
 **Skill checklist satisfied**
 
-- [x] A spend-once record exists (per-hash mapping or per-signer nonce) and is written in the same
+- [x] A spend-once record exists (per-hash mapping or per-signer nonce) and is written in the same transaction as the payout.
 - [x] Batch payloads bind the whole payload hash (no partial-subset replay).
 
 tags: `signature`, `replay`, `missing-nonce`, `SR-002`
@@ -265,10 +265,9 @@ payable(msg.sender).transfer(amount);
 
 **Skill checklist satisfied**
 
-- [x] State writes (`balances[...]`, totals, flags, allowances, nonces) are ordered strictly
-- [x] A reentrancy guard (`nonReentrant`, OZ `ReentrancyGuard`, ERC-7201 transient storage
-- [x] before** the interaction - checks-effects-interactions holds.
-- [x] Callbacks from the callee (`onERC721Received`, `tokensReceived`, `ERC4626` deposit hooks,
+- [x] State writes (`balances[...]`, totals, flags, allowances, nonces) are ordered strictly **before** the interaction — checks-effects-interactions holds.
+- [x] A reentrancy guard (`nonReentrant`, OZ `ReentrancyGuard`, ERC-7201 transient storage lock, or a manual lock flag) covers the function, or CEI ordering makes it unnecessary.
+- [x] Read-only reentrancy is considered: view functions used by pools, oracles, or liquidators cannot be called mid-callback to observe stale state.
 
 tags: `reentrancy`, `eth`, `value-transfer`, `CEI-001`
 
@@ -307,7 +306,7 @@ selfdestruct(beneficiary);
 
 **Skill checklist satisfied**
 
-- [x] `selfdestruct` does not exist in application code. If it does, it is reachable only behind a
+- [x] `selfdestruct` does not exist in application code; if it does, it is reachable only behind a timelocked governance role with a **fixed** beneficiary, and the destruction is documented.
 
 tags: `selfdestruct`, `irreversible`, `SD-001`
 
@@ -347,10 +346,9 @@ withdraw() performs an external interaction (msg.sender.call) at line 74 and onl
 
 **Skill checklist satisfied**
 
-- [x] State writes (`balances[...]`, totals, flags, allowances, nonces) are ordered strictly
-- [x] A reentrancy guard (`nonReentrant`, OZ `ReentrancyGuard`, ERC-7201 transient storage
-- [x] before** the interaction - checks-effects-interactions holds.
-- [x] Callbacks from the callee (`onERC721Received`, `tokensReceived`, `ERC4626` deposit hooks,
+- [x] State writes (`balances[...]`, totals, flags, allowances, nonces) are ordered strictly **before** the interaction — checks-effects-interactions holds.
+- [x] A reentrancy guard (`nonReentrant`, OZ `ReentrancyGuard`, ERC-7201 transient storage lock, or a manual lock flag) covers the function, or CEI ordering makes it unnecessary.
+- [x] Read-only reentrancy is considered: view functions used by pools, oracles, or liquidators cannot be called mid-callback to observe stale state.
 
 tags: `reentrancy`, `eth`, `value-transfer`, `CEI-001`
 
@@ -390,7 +388,7 @@ function adminDrain(address to, uint256 amount) external {
 
 **Skill checklist satisfied**
 
-- [x] Each privileged function has either a modifier (`onlyOwner`, `onlyRole`, `onlyAdmin`)
+- [x] Each privileged function has either a modifier (`onlyOwner`, `onlyRole`, `onlyAdmin`) or an explicit first-statement `require(msg.sender == ...)`.
 - [x] Build the list of externally callable functions and mark which ones mutate privileged state.
 
 tags: `access-control`, `value-flow`, `AC-001`
@@ -432,10 +430,9 @@ adminDrain() performs an external interaction (to.call) at line 85 and only upda
 
 **Skill checklist satisfied**
 
-- [x] State writes (`balances[...]`, totals, flags, allowances, nonces) are ordered strictly
-- [x] A reentrancy guard (`nonReentrant`, OZ `ReentrancyGuard`, ERC-7201 transient storage
-- [x] before** the interaction - checks-effects-interactions holds.
-- [x] Callbacks from the callee (`onERC721Received`, `tokensReceived`, `ERC4626` deposit hooks,
+- [x] State writes (`balances[...]`, totals, flags, allowances, nonces) are ordered strictly **before** the interaction — checks-effects-interactions holds.
+- [x] A reentrancy guard (`nonReentrant`, OZ `ReentrancyGuard`, ERC-7201 transient storage lock, or a manual lock flag) covers the function, or CEI ordering makes it unnecessary.
+- [x] Read-only reentrancy is considered: view functions used by pools, oracles, or liquidators cannot be called mid-callback to observe stale state.
 
 tags: `reentrancy`, `eth`, `value-transfer`, `CEI-001`
 
@@ -474,8 +471,9 @@ pub raw_config: AccountInfo<'info>,
 
 **Skill checklist satisfied**
 
-- [x] Every account whose **signature** is required is typed `Signer<'info>`; the type system is
-- [x] The key stored as the future authority (`vault.authority = authority.key()`) comes from a
+- [x] Every account whose **signature** is required is typed `Signer<'info>`; the type system is the cheapest proof available.
+- [x] The key stored as the future authority (`vault.authority = authority.key()`) comes from a signer, otherwise the first writer picks the owner of the account.
+- [x] A handler that mints, transfers, closes, reallocs, or writes privileged state has **at least one** signer in its accounts struct — "permissionless mutation" is the top Solana exploit class.
 
 tags: `solana`, `missing-signer`, `SIGNER-001`
 
@@ -515,9 +513,9 @@ assetValue() derives a price from in-pool reserves (`getReserves`), which is the
 
 **Skill checklist satisfied**
 
-- [x] Identify the pricing source: in-pool reserves (spot), a single Chainlink round, a
-- [x] The price cannot be moved inside the same transaction that consumes it (flash-loan
-- [x] A second, independent source or a max-deviation circuit breaker exists for anything that
+- [x] The pricing source is identified as one of: in-pool reserves (spot), a single Chainlink round, a protocol-internal `getPrice`, or an RPC-supplied number.
+- [x] The price cannot be moved inside the same transaction that consumes it — flash-loan resistance is verified, including via `flash`/`swap` callbacks in the same call stack.
+- [x] A second, independent source or a max-deviation circuit breaker exists for anything that moves value.
 
 tags: `oracle`, `price-manipulation`, `flash-loan`, `OR-001`
 
@@ -555,7 +553,8 @@ ctx.accounts.user_authority.lamports_mut(|l| *l += amount)?;
 
 **Skill checklist satisfied**
 
-- [x] Every account whose **signature** is required is typed `Signer<'info>`; the type system is
+- [x] Every account whose **signature** is required is typed `Signer<'info>`; the type system is the cheapest proof available.
+- [x] A handler that mints, transfers, closes, reallocs, or writes privileged state has **at least one** signer in its accounts struct — "permissionless mutation" is the top Solana exploit class.
 
 tags: `solana`, `missing-signer`, `privilege`, `SIGNER-002`
 
@@ -593,7 +592,8 @@ ctx.accounts.vault_token_account.amount += shares;
 
 **Skill checklist satisfied**
 
-- [x] Every account whose **signature** is required is typed `Signer<'info>`; the type system is
+- [x] Every account whose **signature** is required is typed `Signer<'info>`; the type system is the cheapest proof available.
+- [x] A handler that mints, transfers, closes, reallocs, or writes privileged state has **at least one** signer in its accounts struct — "permissionless mutation" is the top Solana exploit class.
 
 tags: `solana`, `missing-signer`, `privilege`, `SIGNER-002`
 
@@ -630,7 +630,8 @@ ctx.accounts.vault_config.limiter = limiter;
 
 **Skill checklist satisfied**
 
-- [x] Every account whose **signature** is required is typed `Signer<'info>`; the type system is
+- [x] Every account whose **signature** is required is typed `Signer<'info>`; the type system is the cheapest proof available.
+- [x] A handler that mints, transfers, closes, reallocs, or writes privileged state has **at least one** signer in its accounts struct — "permissionless mutation" is the top Solana exploit class.
 
 tags: `solana`, `missing-signer`, `privilege`, `SIGNER-002`
 
@@ -668,7 +669,8 @@ from: ctx.accounts.user_token_account.to_account_info(),
 
 **Skill checklist satisfied**
 
-- [x] SPL accounts assert `owner == token_program`, the right `mint`, and the expected authority
+- [x] Accounts that must belong to the program are `Account<'info, T>` — never `UncheckedAccount` or raw `AccountInfo` — so Anchor checks owner and discriminator.
+- [x] SPL accounts assert `owner == token_program`, the right `mint`, and the expected authority (`#[account(token::mint = ..., token::authority = ...)]`).
 
 tags: `solana`, `cpi`, `account-validation`, `ACCT-002`
 
@@ -708,7 +710,7 @@ pub signer_program: UncheckedAccount<'info>,
 
 **Skill checklist satisfied**
 
-- [x] The callee is a `Program<'info, T>` account (or `is_program()` verified), never a raw
+- [x] The callee is a `Program<'info, T>` account (or `is_program()` verified), never a raw `UncheckedAccount`/`AccountInfo` supplied by the client.
 
 tags: `solana`, `cpi`, `program-validation`, `CPI-002`
 
@@ -746,7 +748,7 @@ adminDrain() moves native value to `to`, which is supplied by the caller rather 
 
 **Skill checklist satisfied**
 
-- [x] No value-moving call takes its destination from instruction arguments without deriving it from
+- [x] No value-moving call takes its destination from instruction arguments without deriving it from the contract's own accounting (`withdraw(msg.sender, ...)` beats `send(to, ...)`).
 
 tags: `arbitrary-send`, `value-flow`, `SD-002`
 
@@ -785,8 +787,9 @@ pub reporter: UncheckedAccount<'info>,
 
 **Skill checklist satisfied**
 
-- [x] Every account whose **signature** is required is typed `Signer<'info>`; the type system is
-- [x] The key stored as the future authority (`vault.authority = authority.key()`) comes from a
+- [x] Every account whose **signature** is required is typed `Signer<'info>`; the type system is the cheapest proof available.
+- [x] The key stored as the future authority (`vault.authority = authority.key()`) comes from a signer, otherwise the first writer picks the owner of the account.
+- [x] A handler that mints, transfers, closes, reallocs, or writes privileged state has **at least one** signer in its accounts struct — "permissionless mutation" is the top Solana exploit class.
 
 tags: `solana`, `missing-signer`, `SIGNER-001`
 
@@ -825,8 +828,9 @@ pub authority: AccountInfo<'info>,
 
 **Skill checklist satisfied**
 
-- [x] Every account whose **signature** is required is typed `Signer<'info>`; the type system is
-- [x] The key stored as the future authority (`vault.authority = authority.key()`) comes from a
+- [x] Every account whose **signature** is required is typed `Signer<'info>`; the type system is the cheapest proof available.
+- [x] The key stored as the future authority (`vault.authority = authority.key()`) comes from a signer, otherwise the first writer picks the owner of the account.
+- [x] A handler that mints, transfers, closes, reallocs, or writes privileged state has **at least one** signer in its accounts struct — "permissionless mutation" is the top Solana exploit class.
 
 tags: `solana`, `missing-signer`, `SIGNER-001`
 
@@ -866,8 +870,7 @@ let shares = (amount / vault.total_deposits) * 1_000_000_000; // precision loss
 
 **Skill checklist satisfied**
 
-- [x] Multiplication happens **before** division; division-first expressions are precision-loss
-- [x] Rounding direction is deliberate and always favours the pool (virtual offset / ERC-4626-style
+- [x] Rounding direction is deliberate and always favours the pool (virtual offset / ERC-4626-style inflation guard) so dust cannot be free-minted.
 
 tags: `solana`, `precision`, `accounting`, `MATH-001`
 
@@ -907,7 +910,7 @@ anchor_lang::solana_program::program::invoke(&instruction, &account_infos);
 
 **Skill checklist satisfied**
 
-- [x] Every CPI result is propagated (`?`) or explicitly handled; a dropped `Result` means the
+- [x] Every CPI result is propagated (`?`) or explicitly handled; a dropped `Result` means the handler reports success for an operation that never happened.
 
 tags: `solana`, `cpi`, `unchecked`, `CPI-001`
 
@@ -947,7 +950,8 @@ require(signer == admin, "hyprivault: bad signature");
 
 **Skill checklist satisfied**
 
-- [x] Non-standard ERC20s (USDT-style no-return, fee-on-transfer, rebasing) are handled with
+- [x] Non-standard ERC20s (USDT-style no-return, fee-on-transfer, rebasing) are handled with explicit balance diffs instead of `require(ok)`.
+- [x] Every `.call(...)` is destructured and the `ok` boolean is `require`d (or `Address.sendValue`/`SafeERC20` is used).
 
 tags: `unchecked-call`, `error-handling`, `EC-001`
 
@@ -985,7 +989,8 @@ require(tx.origin == owner, "vault: not owner (tx.origin)");
 
 **Skill checklist satisfied**
 
-- [x] `tx.origin` is **never** the authorisation basis (`msg.sender` is the caller).
+- [x] `tx.origin` is **never** the authorisation basis — `msg.sender` is the correct caller identity.
+- [x] Each privileged function has either a modifier (`onlyOwner`, `onlyRole`, `onlyAdmin`) or an explicit first-statement `require(msg.sender == ...)`.
 
 tags: `access-control`, `tx-origin`, `AC-002`
 
@@ -1025,7 +1030,8 @@ pendingRewards[user] = 0;
 
 **Skill checklist satisfied**
 
-- [x] Non-standard ERC20s (USDT-style no-return, fee-on-transfer, rebasing) are handled with
+- [x] Non-standard ERC20s (USDT-style no-return, fee-on-transfer, rebasing) are handled with explicit balance diffs instead of `require(ok)`.
+- [x] Every `.call(...)` is destructured and the `ok` boolean is `require`d (or `Address.sendValue`/`SafeERC20` is used).
 
 tags: `unchecked-call`, `error-handling`, `EC-001`
 
@@ -1063,7 +1069,7 @@ function setReserveFactor(uint256 bps) external {
 
 **Skill checklist satisfied**
 
-- [x] Each privileged function has either a modifier (`onlyOwner`, `onlyRole`, `onlyAdmin`)
+- [x] Each privileged function has either a modifier (`onlyOwner`, `onlyRole`, `onlyAdmin`) or an explicit first-statement `require(msg.sender == ...)`.
 - [x] Build the list of externally callable functions and mark which ones mutate privileged state.
 
 tags: `access-control`, `config`, `AC-003`
@@ -1103,7 +1109,7 @@ assetValue() takes the answer from `latestRoundData()` but never inspects `updat
 
 **Skill checklist satisfied**
 
-- [x] Chainlink reads validate all four of: `updatedAt` freshness, `answeredInRound >= roundId`,
+- [x] Chainlink reads validate all four of: `updatedAt` freshness, `answeredInRound >= roundId`, `answer > 0`, and (for round-critical flows) `startedAt`.
 
 tags: `oracle`, `staleness`, `OR-002`
 
@@ -1141,7 +1147,7 @@ function setPriceFeed(address feed) external {
 
 **Skill checklist satisfied**
 
-- [x] Each privileged function has either a modifier (`onlyOwner`, `onlyRole`, `onlyAdmin`)
+- [x] Each privileged function has either a modifier (`onlyOwner`, `onlyRole`, `onlyAdmin`) or an explicit first-statement `require(msg.sender == ...)`.
 - [x] Build the list of externally callable functions and mark which ones mutate privileged state.
 
 tags: `access-control`, `config`, `AC-003`
@@ -1182,8 +1188,8 @@ pub user_token_account: UncheckedAccount<'info>,
 
 **Skill checklist satisfied**
 
-- [x] SPL accounts assert `owner == token_program`, the right `mint`, and the expected authority
-- [x] Every account that authorises a privileged action is typed `Signer<'info>` (or its
+- [x] Accounts that must belong to the program are `Account<'info, T>` — never `UncheckedAccount` or raw `AccountInfo` — so Anchor checks owner and discriminator.
+- [x] Every account that authorises a privileged action is typed `Signer<'info>` (or its signature is proven by a PDA `seeds` constraint).
 
 tags: `solana`, `account-validation`, `type-confusion`, `ACCT-001`
 
@@ -1223,8 +1229,8 @@ pub signer_program: UncheckedAccount<'info>,
 
 **Skill checklist satisfied**
 
-- [x] SPL accounts assert `owner == token_program`, the right `mint`, and the expected authority
-- [x] Every account that authorises a privileged action is typed `Signer<'info>` (or its
+- [x] Accounts that must belong to the program are `Account<'info, T>` — never `UncheckedAccount` or raw `AccountInfo` — so Anchor checks owner and discriminator.
+- [x] Every account that authorises a privileged action is typed `Signer<'info>` (or its signature is proven by a PDA `seeds` constraint).
 
 tags: `solana`, `account-validation`, `type-confusion`, `ACCT-001`
 
@@ -1264,8 +1270,8 @@ pub raw_config: AccountInfo<'info>,
 
 **Skill checklist satisfied**
 
-- [x] SPL accounts assert `owner == token_program`, the right `mint`, and the expected authority
-- [x] Every account that authorises a privileged action is typed `Signer<'info>` (or its
+- [x] Accounts that must belong to the program are `Account<'info, T>` — never `UncheckedAccount` or raw `AccountInfo` — so Anchor checks owner and discriminator.
+- [x] Every account that authorises a privileged action is typed `Signer<'info>` (or its signature is proven by a PDA `seeds` constraint).
 
 tags: `solana`, `account-validation`, `type-confusion`, `ACCT-001`
 
@@ -1303,7 +1309,7 @@ implementation = newImpl;
 
 **Skill checklist satisfied**
 
-- [x] Writes to logic pointers are guarded by an admin role **and** a timelock/delay, and emit an
+- [x] Writes to logic pointers are guarded by an admin role **and** a timelock/delay, and emit an `Upgraded` event.
 
 tags: `delegatecall`, `proxy`, `storage-collision`, `DC-002`
 
@@ -1342,7 +1348,7 @@ address signer = ecrecover(doc, v, r, s);
 
 **Skill checklist satisfied**
 
-- [x] The digest commits to the verifying context: EIP-712 domain separator with `name`,
+- [x] The digest commits to the verifying context: EIP-712 domain separator with `name`, `version`, `chainId`, `verifyingContract`.
 
 tags: `signature`, `replay`, `SR-001`
 
@@ -1380,7 +1386,7 @@ require(msg.sender == pendingAdmin, "hyprivault: not pending admin");
 
 **Skill checklist satisfied**
 
-- [x] Token recovery uses `SafeERC20` and checks the return data - a rescue that silently fails is
+- [x] Every authorisation variable is actually assigned somewhere: a `require(msg.sender == X)` where `X` is never written is dead code, and dead recovery code means permanently stranded funds.
 
 tags: `stuck-funds`, `unreachable-guard`, `SF-001`
 
@@ -1420,7 +1426,7 @@ function refundPending(address user) public returns (uint256 paid) {
 
 **Skill checklist satisfied**
 
-- [x] Each privileged function has either a modifier (`onlyOwner`, `onlyRole`, `onlyAdmin`)
+- [x] Each privileged function has either a modifier (`onlyOwner`, `onlyRole`, `onlyAdmin`) or an explicit first-statement `require(msg.sender == ...)`.
 - [x] Build the list of externally callable functions and mark which ones mutate privileged state.
 
 tags: `access-control`, `value-flow`, `AC-001`
@@ -1460,7 +1466,8 @@ ctx.accounts.vault_token_account.amount += shares;
 
 **Skill checklist satisfied**
 
-- [x] Every CPI result is propagated (`?`) or explicitly handled; a dropped `Result` means the
+- [x] Writable accounts handed to the callee are ones the program owns; unowned writable accounts trigger `OwnerChanged`/`MissingAccount` failures which must be surfaced, not swallowed.
+- [x] Every CPI result is propagated (`?`) or explicitly handled; a dropped `Result` means the handler reports success for an operation that never happened.
 
 tags: `solana`, `spl`, `account-ownership`, `CPI-003`
 
@@ -1498,7 +1505,8 @@ let shares = (amount / vault.total_deposits) * 1_000_000_000; // precision loss
 
 **Skill checklist satisfied**
 
-- [x] Divisors can never be zero: the empty-vault case is special-cased or guarded with
+- [x] Divisors can never be zero: the empty-vault case is special-cased or guarded with `require!(x > 0)`.
+- [x] Arithmetic uses `checked_add`/`checked_sub`/`checked_mul`/`checked_div` or `Saturating`; if the workspace sets `overflow-checks = false`, silent wrapping is a fund-integrity bug rather than a panic.
 
 tags: `solana`, `division-by-zero`, `availability`, `MATH-003`
 
@@ -1574,7 +1582,8 @@ The account constraint uses `bump = vault_config.bump`, and that stored bump was
 
 **Skill checklist satisfied**
 
-- [x] PDAs are derived, not trusted: `seeds` + `bump` verified by Anchor, or
+- [x] Every account that authorises a privileged action is typed `Signer<'info>` (or its signature is proven by a PDA `seeds` constraint).
+- [x] PDAs are derived, not trusted: `seeds` + `bump` verified by Anchor, or `find_program_address`/`create_program_address` in code. A `bump` arriving from instruction data is a validation gap.
 
 tags: `solana`, `pda`, `seeds`, `ACCT-003`
 
@@ -1612,7 +1621,8 @@ The account constraint uses `bump = vault_config.bump`, and that stored bump was
 
 **Skill checklist satisfied**
 
-- [x] PDAs are derived, not trusted: `seeds` + `bump` verified by Anchor, or
+- [x] Every account that authorises a privileged action is typed `Signer<'info>` (or its signature is proven by a PDA `seeds` constraint).
+- [x] PDAs are derived, not trusted: `seeds` + `bump` verified by Anchor, or `find_program_address`/`create_program_address` in code. A `bump` arriving from instruction data is a validation gap.
 
 tags: `solana`, `pda`, `seeds`, `ACCT-003`
 
@@ -1650,8 +1660,9 @@ pub fn initialize(ctx: Context<Initialize>, bump: u8, limiter: u64) -> Result<()
 
 **Skill checklist satisfied**
 
-- [x] PDAs are derived, not trusted: `seeds` + `bump` verified by Anchor, or
-- [x] SPL accounts assert `owner == token_program`, the right `mint`, and the expected authority
+- [x] Every account that authorises a privileged action is typed `Signer<'info>` (or its signature is proven by a PDA `seeds` constraint).
+- [x] SPL accounts assert `owner == token_program`, the right `mint`, and the expected authority (`#[account(token::mint = ..., token::authority = ...)]`).
+- [x] PDAs are derived, not trusted: `seeds` + `bump` verified by Anchor, or `find_program_address`/`create_program_address` in code. A `bump` arriving from instruction data is a validation gap.
 
 tags: `solana`, `pda`, `authority`, `AUTH-001`
 
@@ -1726,7 +1737,7 @@ The recovery path does a low-level `token.call(...)` and then discards the boole
 
 **Skill checklist satisfied**
 
-- [x] Token recovery uses `SafeERC20` and checks the return data - a rescue that silently fails is
+- [x] Token recovery uses `SafeERC20` and checks the return data — a rescue that silently fails is worse than no rescue.
 
 tags: `unchecked-call`, `token-recovery`, `SF-003`
 
@@ -1765,8 +1776,8 @@ pub user_authority: AccountInfo<'info>,
 
 **Skill checklist satisfied**
 
-- [x] SPL accounts assert `owner == token_program`, the right `mint`, and the expected authority
-- [x] Every account that authorises a privileged action is typed `Signer<'info>` (or its
+- [x] SPL accounts assert `owner == token_program`, the right `mint`, and the expected authority (`#[account(token::mint = ..., token::authority = ...)]`).
+- [x] Every account that authorises a privileged action is typed `Signer<'info>` (or its signature is proven by a PDA `seeds` constraint).
 
 tags: `solana`, `authority`, `static-note`, `AUTH-003`
 
@@ -1805,8 +1816,8 @@ return oracle.spotPrice(asset);
 
 **Skill checklist satisfied**
 
-- [x] A second, independent source or a max-deviation circuit breaker exists for anything that
-- [x] Units/exponents are asserted (1e8 Chainlink vs 1e18 pool decimals vs HyperCore asset
+- [x] A second, independent source or a max-deviation circuit breaker exists for anything that moves value.
+- [x] Units and exponents are asserted (1e8 Chainlink vs 1e18 pool decimals vs HyperCore asset exponent) before values are combined.
 
 tags: `oracle`, `single-source`, `OR-003`
 
@@ -1845,7 +1856,7 @@ ctx.accounts.user_vault.shares = ctx.accounts.user_vault.shares + shares;
 
 **Skill checklist satisfied**
 
-- [x] Arithmetic uses `checked_add/sub/mul/div` or `Saturating`. If the workspace sets
+- [x] Arithmetic uses `checked_add`/`checked_sub`/`checked_mul`/`checked_div` or `Saturating`; if the workspace sets `overflow-checks = false`, silent wrapping is a fund-integrity bug rather than a panic.
 - [x] Intermediates are widened (`u128`) and narrowed only at the end, after bounds checks.
 
 tags: `solana`, `overflow`, `unchecked-math`, `MATH-002`
@@ -1885,7 +1896,7 @@ user_vault.shares = user_vault.shares - amount;
 
 **Skill checklist satisfied**
 
-- [x] Arithmetic uses `checked_add/sub/mul/div` or `Saturating`. If the workspace sets
+- [x] Arithmetic uses `checked_add`/`checked_sub`/`checked_mul`/`checked_div` or `Saturating`; if the workspace sets `overflow-checks = false`, silent wrapping is a fund-integrity bug rather than a panic.
 - [x] Intermediates are widened (`u128`) and narrowed only at the end, after bounds checks.
 
 tags: `solana`, `overflow`, `unchecked-math`, `MATH-002`
@@ -1924,7 +1935,7 @@ address signer = ecrecover(doc, v, r, s);
 
 **Skill checklist satisfied**
 
-- [x] Malleability is handled by a library (`ECDSA.recover`/`tryRecover`, enforced low-s,
+- [x] Malleability is handled by a library (`ECDSA.recover`/`tryRecover`, enforced low-s, `v in {27,28}`) rather than raw `ecrecover`.
 
 tags: `signature`, `malleability`, `SR-004`
 
@@ -1963,7 +1974,8 @@ tags: `signature`, `malleability`, `SR-004`
 
 **Skill checklist satisfied**
 
-- [x] SPL accounts assert `owner == token_program`, the right `mint`, and the expected authority
+- [x] Owner-writable fields (`data`, `lamports`) are mutated only through typed accounts, and `realloc` rent payers are funded signers.
+- [x] SPL accounts assert `owner == token_program`, the right `mint`, and the expected authority (`#[account(token::mint = ..., token::authority = ...)]`).
 
 tags: `solana`, `realloc`, `authority-note`, `AUTH-002`
 
@@ -2002,7 +2014,6 @@ let shares = (report.amount as u64) * vault.limiter;
 **Skill checklist satisfied**
 
 - [x] `as` casts are reviewed for truncation (`u128 as u64`, `i64 as u64`).
-- [x] Multiplication happens **before** division; division-first expressions are precision-loss
 
 tags: `solana`, `cast`, `precision`, `MATH-004`
 
@@ -2040,7 +2051,7 @@ payable(msg.sender).transfer(amount);
 
 **Skill checklist satisfied**
 
-- [x] The 2300-gas stipend of `send`/`transfer` is acceptable for every plausible recipient
+- [x] The 2300-gas stipend of `send`/`transfer` is acceptable for every plausible recipient (contracts, multisigs, AA wallets); otherwise use pull payments.
 
 tags: `gas-stipend`, `availability`, `EC-003`
 
@@ -2065,7 +2076,7 @@ tags: `gas-stipend`, `availability`, `EC-003`
 | `skills/hyperliquid-hyperevm-notes/SKILL.md` | hyperevm, evm | 7 |
 | `skills/oracle-price/SKILL.md` | evm, hyperevm | 7 |
 | `skills/poc-stubs/SKILL.md` | evm, hyperevm, solana | 7 |
-| `skills/reentrancy/SKILL.md` | evm, hyperevm | 8 |
+| `skills/reentrancy/SKILL.md` | evm, hyperevm | 7 |
 | `skills/severity-grading/SKILL.md` | evm, hyperevm, solana | 11 |
 | `skills/signature-replay/SKILL.md` | evm, hyperevm | 7 |
 | `skills/solana-account-validation/SKILL.md` | solana | 9 |

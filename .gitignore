@@ -41,3 +41,6 @@ test-vectors/
 local/
 scratch/
 *.log
+
+# Bob IDE local session rules
+.bob/

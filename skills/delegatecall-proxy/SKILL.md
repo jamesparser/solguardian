@@ -13,16 +13,11 @@ detector: solguardian/detectors/evm_delegatecall.py
 `upgradeToAndCall`, and any "migrate"/"execute" helper.
 
 ## Checklist
-1. The delegatecall target resolves to a constant or admin-upgraded implementation address -
-   never a raw user argument.
-2. Writes to logic pointers are guarded by an admin role **and** a timelock/delay, and emit an
-   `Upgraded` event.
-3. The implementation's storage layout is append-only and keeps the ERC-1967 gap; proxy slots
-   are not writable by implementation code.
-4. delegatecall context is remembered: `address(this)`, storage and `msg.sender` carry over, so
-   the callee can rewrite owner/admin slots and reach `selfdestruct`.
-5. Initialisers cannot be re-run through the delegate path (`_disableInitializers`,
-   `onlyInitializing`).
+1. The delegatecall target resolves to a constant or admin-upgraded implementation address — never a raw user argument.
+2. Writes to logic pointers are guarded by an admin role **and** a timelock/delay, and emit an `Upgraded` event.
+3. The implementation's storage layout is append-only and keeps the ERC-1967 gap; proxy slots are not writable by implementation code.
+4. The delegatecall context is understood: `address(this)`, storage, and `msg.sender` carry over, so the callee can rewrite owner/admin slots and reach `selfdestruct`.
+5. Initialisers cannot be re-run through the delegate path (`_disableInitializers`, `onlyInitializing`).
 6. Beacon/proxy admin ownership matches the intended governance, not the deployer EOA.
 7. Unstructured storage (`t_store`, assembly `sstore`) is checked against the layout.
 
@@ -36,5 +31,4 @@ detector: solguardian/detectors/evm_delegatecall.py
 - `delegatecall` to `address(this)` for storage-safe self-delegation.
 
 ## Required output fields
-`id, severity, confidence, location, explanation, exploit sketch, PoC stub, patch sketch,
-checklist items, plus which slot/pointer is at risk.`
+`id, severity, confidence, location, explanation, exploit sketch, PoC stub, patch sketch, checklist items, plus which slot/pointer is at risk.`

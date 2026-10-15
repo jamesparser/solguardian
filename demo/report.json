@@ -34,7 +34,7 @@
   ],
   "summary": {
     "total": 49,
-    "duration_ms": 669,
+    "duration_ms": 313,
     "by_severity": {
       "critical": 16,
       "high": 18,
@@ -102,8 +102,8 @@
       },
       "skill": "skills/delegatecall-proxy/SKILL.md",
       "skill_checklist": [
-        "The delegatecall target resolves to a constant or admin-upgraded implementation address -",
-        "Writes to logic pointers are guarded by an admin role **and** a timelock/delay, and emit an"
+        "The delegatecall target resolves to a constant or admin-upgraded implementation address — never a raw user argument.",
+        "Writes to logic pointers are guarded by an admin role **and** a timelock/delay, and emit an `Upgraded` event."
       ],
       "cwe": "CWE-471",
       "tags": [
@@ -151,8 +151,8 @@
       },
       "skill": "skills/solana-account-validation/SKILL.md",
       "skill_checklist": [
-        "SPL accounts assert `owner == token_program`, the right `mint`, and the expected authority",
-        "`remaining_accounts` are length-checked **before** indexing and validated individually -"
+        "Accounts that must belong to the program are `Account<'info, T>` — never `UncheckedAccount` or raw `AccountInfo` — so Anchor checks owner and discriminator.",
+        "`remaining_accounts` are length-checked **before** indexing and validated individually — Anchor does not check them."
       ],
       "cwe": "CWE-125",
       "tags": [
@@ -202,7 +202,7 @@
       },
       "skill": "skills/signature-replay/SKILL.md",
       "skill_checklist": [
-        "A spend-once record exists (per-hash mapping or per-signer nonce) and is written in the same",
+        "A spend-once record exists (per-hash mapping or per-signer nonce) and is written in the same transaction as the payout.",
         "Batch payloads bind the whole payload hash (no partial-subset replay)."
       ],
       "cwe": "CWE-294",
@@ -257,10 +257,9 @@
       },
       "skill": "skills/reentrancy/SKILL.md",
       "skill_checklist": [
-        "State writes (`balances[...]`, totals, flags, allowances, nonces) are ordered strictly",
-        "A reentrancy guard (`nonReentrant`, OZ `ReentrancyGuard`, ERC-7201 transient storage",
-        "before** the interaction - checks-effects-interactions holds.",
-        "Callbacks from the callee (`onERC721Received`, `tokensReceived`, `ERC4626` deposit hooks,"
+        "State writes (`balances[...]`, totals, flags, allowances, nonces) are ordered strictly **before** the interaction — checks-effects-interactions holds.",
+        "A reentrancy guard (`nonReentrant`, OZ `ReentrancyGuard`, ERC-7201 transient storage lock, or a manual lock flag) covers the function, or CEI ordering makes it unnecessary.",
+        "Read-only reentrancy is considered: view functions used by pools, oracles, or liquidators cannot be called mid-callback to observe stale state."
       ],
       "cwe": "CWE-841",
       "tags": [
@@ -316,7 +315,7 @@
       },
       "skill": "skills/fund-recovery/SKILL.md",
       "skill_checklist": [
-        "`selfdestruct` does not exist in application code. If it does, it is reachable only behind a"
+        "`selfdestruct` does not exist in application code; if it does, it is reachable only behind a timelocked governance role with a **fixed** beneficiary, and the destruction is documented."
       ],
       "cwe": "CWE-284",
       "tags": [
@@ -365,10 +364,9 @@
       },
       "skill": "skills/reentrancy/SKILL.md",
       "skill_checklist": [
-        "State writes (`balances[...]`, totals, flags, allowances, nonces) are ordered strictly",
-        "A reentrancy guard (`nonReentrant`, OZ `ReentrancyGuard`, ERC-7201 transient storage",
-        "before** the interaction - checks-effects-interactions holds.",
-        "Callbacks from the callee (`onERC721Received`, `tokensReceived`, `ERC4626` deposit hooks,"
+        "State writes (`balances[...]`, totals, flags, allowances, nonces) are ordered strictly **before** the interaction — checks-effects-interactions holds.",
+        "A reentrancy guard (`nonReentrant`, OZ `ReentrancyGuard`, ERC-7201 transient storage lock, or a manual lock flag) covers the function, or CEI ordering makes it unnecessary.",
+        "Read-only reentrancy is considered: view functions used by pools, oracles, or liquidators cannot be called mid-callback to observe stale state."
       ],
       "cwe": "CWE-841",
       "tags": [
@@ -417,7 +415,7 @@
       },
       "skill": "skills/access-control/SKILL.md",
       "skill_checklist": [
-        "Each privileged function has either a modifier (`onlyOwner`, `onlyRole`, `onlyAdmin`)",
+        "Each privileged function has either a modifier (`onlyOwner`, `onlyRole`, `onlyAdmin`) or an explicit first-statement `require(msg.sender == ...)`.",
         "Build the list of externally callable functions and mark which ones mutate privileged state."
       ],
       "cwe": "CWE-284",
@@ -470,10 +468,9 @@
       },
       "skill": "skills/reentrancy/SKILL.md",
       "skill_checklist": [
-        "State writes (`balances[...]`, totals, flags, allowances, nonces) are ordered strictly",
-        "A reentrancy guard (`nonReentrant`, OZ `ReentrancyGuard`, ERC-7201 transient storage",
-        "before** the interaction - checks-effects-interactions holds.",
-        "Callbacks from the callee (`onERC721Received`, `tokensReceived`, `ERC4626` deposit hooks,"
+        "State writes (`balances[...]`, totals, flags, allowances, nonces) are ordered strictly **before** the interaction — checks-effects-interactions holds.",
+        "A reentrancy guard (`nonReentrant`, OZ `ReentrancyGuard`, ERC-7201 transient storage lock, or a manual lock flag) covers the function, or CEI ordering makes it unnecessary.",
+        "Read-only reentrancy is considered: view functions used by pools, oracles, or liquidators cannot be called mid-callback to observe stale state."
       ],
       "cwe": "CWE-841",
       "tags": [
@@ -525,8 +522,9 @@
       },
       "skill": "skills/solana-signer/SKILL.md",
       "skill_checklist": [
-        "Every account whose **signature** is required is typed `Signer<'info>`; the type system is",
-        "The key stored as the future authority (`vault.authority = authority.key()`) comes from a"
+        "Every account whose **signature** is required is typed `Signer<'info>`; the type system is the cheapest proof available.",
+        "The key stored as the future authority (`vault.authority = authority.key()`) comes from a signer, otherwise the first writer picks the owner of the account.",
+        "A handler that mints, transfers, closes, reallocs, or writes privileged state has **at least one** signer in its accounts struct — \"permissionless mutation\" is the top Solana exploit class."
       ],
       "cwe": "CWE-287",
       "tags": [
@@ -575,9 +573,9 @@
       },
       "skill": "skills/oracle-price/SKILL.md",
       "skill_checklist": [
-        "Identify the pricing source: in-pool reserves (spot), a single Chainlink round, a",
-        "The price cannot be moved inside the same transaction that consumes it (flash-loan",
-        "A second, independent source or a max-deviation circuit breaker exists for anything that"
+        "The pricing source is identified as one of: in-pool reserves (spot), a single Chainlink round, a protocol-internal `getPrice`, or an RPC-supplied number.",
+        "The price cannot be moved inside the same transaction that consumes it — flash-loan resistance is verified, including via `flash`/`swap` callbacks in the same call stack.",
+        "A second, independent source or a max-deviation circuit breaker exists for anything that moves value."
       ],
       "cwe": "CWE-1231",
       "tags": [
@@ -624,7 +622,8 @@
       },
       "skill": "skills/solana-signer/SKILL.md",
       "skill_checklist": [
-        "Every account whose **signature** is required is typed `Signer<'info>`; the type system is"
+        "Every account whose **signature** is required is typed `Signer<'info>`; the type system is the cheapest proof available.",
+        "A handler that mints, transfers, closes, reallocs, or writes privileged state has **at least one** signer in its accounts struct — \"permissionless mutation\" is the top Solana exploit class."
       ],
       "cwe": "CWE-287",
       "tags": [
@@ -674,7 +673,8 @@
       },
       "skill": "skills/solana-signer/SKILL.md",
       "skill_checklist": [
-        "Every account whose **signature** is required is typed `Signer<'info>`; the type system is"
+        "Every account whose **signature** is required is typed `Signer<'info>`; the type system is the cheapest proof available.",
+        "A handler that mints, transfers, closes, reallocs, or writes privileged state has **at least one** signer in its accounts struct — \"permissionless mutation\" is the top Solana exploit class."
       ],
       "cwe": "CWE-287",
       "tags": [
@@ -724,7 +724,8 @@
       },
       "skill": "skills/solana-signer/SKILL.md",
       "skill_checklist": [
-        "Every account whose **signature** is required is typed `Signer<'info>`; the type system is"
+        "Every account whose **signature** is required is typed `Signer<'info>`; the type system is the cheapest proof available.",
+        "A handler that mints, transfers, closes, reallocs, or writes privileged state has **at least one** signer in its accounts struct — \"permissionless mutation\" is the top Solana exploit class."
       ],
       "cwe": "CWE-287",
       "tags": [
@@ -771,7 +772,8 @@
       },
       "skill": "skills/solana-account-validation/SKILL.md",
       "skill_checklist": [
-        "SPL accounts assert `owner == token_program`, the right `mint`, and the expected authority"
+        "Accounts that must belong to the program are `Account<'info, T>` — never `UncheckedAccount` or raw `AccountInfo` — so Anchor checks owner and discriminator.",
+        "SPL accounts assert `owner == token_program`, the right `mint`, and the expected authority (`#[account(token::mint = ..., token::authority = ...)]`)."
       ],
       "cwe": "CWE-863",
       "tags": [
@@ -824,7 +826,7 @@
       },
       "skill": "skills/solana-cpi/SKILL.md",
       "skill_checklist": [
-        "The callee is a `Program<'info, T>` account (or `is_program()` verified), never a raw"
+        "The callee is a `Program<'info, T>` account (or `is_program()` verified), never a raw `UncheckedAccount`/`AccountInfo` supplied by the client."
       ],
       "cwe": "CWE-252",
       "tags": [
@@ -873,7 +875,7 @@
       },
       "skill": "skills/fund-recovery/SKILL.md",
       "skill_checklist": [
-        "No value-moving call takes its destination from instruction arguments without deriving it from"
+        "No value-moving call takes its destination from instruction arguments without deriving it from the contract's own accounting (`withdraw(msg.sender, ...)` beats `send(to, ...)`)."
       ],
       "cwe": "CWE-284",
       "tags": [
@@ -924,8 +926,9 @@
       },
       "skill": "skills/solana-signer/SKILL.md",
       "skill_checklist": [
-        "Every account whose **signature** is required is typed `Signer<'info>`; the type system is",
-        "The key stored as the future authority (`vault.authority = authority.key()`) comes from a"
+        "Every account whose **signature** is required is typed `Signer<'info>`; the type system is the cheapest proof available.",
+        "The key stored as the future authority (`vault.authority = authority.key()`) comes from a signer, otherwise the first writer picks the owner of the account.",
+        "A handler that mints, transfers, closes, reallocs, or writes privileged state has **at least one** signer in its accounts struct — \"permissionless mutation\" is the top Solana exploit class."
       ],
       "cwe": "CWE-287",
       "tags": [
@@ -973,8 +976,9 @@
       },
       "skill": "skills/solana-signer/SKILL.md",
       "skill_checklist": [
-        "Every account whose **signature** is required is typed `Signer<'info>`; the type system is",
-        "The key stored as the future authority (`vault.authority = authority.key()`) comes from a"
+        "Every account whose **signature** is required is typed `Signer<'info>`; the type system is the cheapest proof available.",
+        "The key stored as the future authority (`vault.authority = authority.key()`) comes from a signer, otherwise the first writer picks the owner of the account.",
+        "A handler that mints, transfers, closes, reallocs, or writes privileged state has **at least one** signer in its accounts struct — \"permissionless mutation\" is the top Solana exploit class."
       ],
       "cwe": "CWE-287",
       "tags": [
@@ -1022,8 +1026,7 @@
       },
       "skill": "skills/solana-math/SKILL.md",
       "skill_checklist": [
-        "Multiplication happens **before** division; division-first expressions are precision-loss",
-        "Rounding direction is deliberate and always favours the pool (virtual offset / ERC-4626-style"
+        "Rounding direction is deliberate and always favours the pool (virtual offset / ERC-4626-style inflation guard) so dust cannot be free-minted."
       ],
       "cwe": "CWE-682",
       "tags": [
@@ -1075,7 +1078,7 @@
       },
       "skill": "skills/solana-cpi/SKILL.md",
       "skill_checklist": [
-        "Every CPI result is propagated (`?`) or explicitly handled; a dropped `Result` means the"
+        "Every CPI result is propagated (`?`) or explicitly handled; a dropped `Result` means the handler reports success for an operation that never happened."
       ],
       "cwe": "CWE-252",
       "tags": [
@@ -1126,7 +1129,8 @@
       },
       "skill": "skills/external-calls/SKILL.md",
       "skill_checklist": [
-        "Non-standard ERC20s (USDT-style no-return, fee-on-transfer, rebasing) are handled with"
+        "Non-standard ERC20s (USDT-style no-return, fee-on-transfer, rebasing) are handled with explicit balance diffs instead of `require(ok)`.",
+        "Every `.call(...)` is destructured and the `ok` boolean is `require`d (or `Address.sendValue`/`SafeERC20` is used)."
       ],
       "cwe": "CWE-252",
       "tags": [
@@ -1179,7 +1183,8 @@
       },
       "skill": "skills/access-control/SKILL.md",
       "skill_checklist": [
-        "`tx.origin` is **never** the authorisation basis (`msg.sender` is the caller)."
+        "`tx.origin` is **never** the authorisation basis — `msg.sender` is the correct caller identity.",
+        "Each privileged function has either a modifier (`onlyOwner`, `onlyRole`, `onlyAdmin`) or an explicit first-statement `require(msg.sender == ...)`."
       ],
       "cwe": "CWE-284",
       "tags": [
@@ -1227,7 +1232,8 @@
       },
       "skill": "skills/external-calls/SKILL.md",
       "skill_checklist": [
-        "Non-standard ERC20s (USDT-style no-return, fee-on-transfer, rebasing) are handled with"
+        "Non-standard ERC20s (USDT-style no-return, fee-on-transfer, rebasing) are handled with explicit balance diffs instead of `require(ok)`.",
+        "Every `.call(...)` is destructured and the `ok` boolean is `require`d (or `Address.sendValue`/`SafeERC20` is used)."
       ],
       "cwe": "CWE-252",
       "tags": [
@@ -1276,7 +1282,7 @@
       },
       "skill": "skills/access-control/SKILL.md",
       "skill_checklist": [
-        "Each privileged function has either a modifier (`onlyOwner`, `onlyRole`, `onlyAdmin`)",
+        "Each privileged function has either a modifier (`onlyOwner`, `onlyRole`, `onlyAdmin`) or an explicit first-statement `require(msg.sender == ...)`.",
         "Build the list of externally callable functions and mark which ones mutate privileged state."
       ],
       "cwe": "CWE-284",
@@ -1325,7 +1331,7 @@
       },
       "skill": "skills/oracle-price/SKILL.md",
       "skill_checklist": [
-        "Chainlink reads validate all four of: `updatedAt` freshness, `answeredInRound >= roundId`,"
+        "Chainlink reads validate all four of: `updatedAt` freshness, `answeredInRound >= roundId`, `answer > 0`, and (for round-critical flows) `startedAt`."
       ],
       "cwe": "CWE-1231",
       "tags": [
@@ -1372,7 +1378,7 @@
       },
       "skill": "skills/access-control/SKILL.md",
       "skill_checklist": [
-        "Each privileged function has either a modifier (`onlyOwner`, `onlyRole`, `onlyAdmin`)",
+        "Each privileged function has either a modifier (`onlyOwner`, `onlyRole`, `onlyAdmin`) or an explicit first-statement `require(msg.sender == ...)`.",
         "Build the list of externally callable functions and mark which ones mutate privileged state."
       ],
       "cwe": "CWE-284",
@@ -1421,8 +1427,8 @@
       },
       "skill": "skills/solana-account-validation/SKILL.md",
       "skill_checklist": [
-        "SPL accounts assert `owner == token_program`, the right `mint`, and the expected authority",
-        "Every account that authorises a privileged action is typed `Signer<'info>` (or its"
+        "Accounts that must belong to the program are `Account<'info, T>` — never `UncheckedAccount` or raw `AccountInfo` — so Anchor checks owner and discriminator.",
+        "Every account that authorises a privileged action is typed `Signer<'info>` (or its signature is proven by a PDA `seeds` constraint)."
       ],
       "cwe": "CWE-863",
       "tags": [
@@ -1475,8 +1481,8 @@
       },
       "skill": "skills/solana-account-validation/SKILL.md",
       "skill_checklist": [
-        "SPL accounts assert `owner == token_program`, the right `mint`, and the expected authority",
-        "Every account that authorises a privileged action is typed `Signer<'info>` (or its"
+        "Accounts that must belong to the program are `Account<'info, T>` — never `UncheckedAccount` or raw `AccountInfo` — so Anchor checks owner and discriminator.",
+        "Every account that authorises a privileged action is typed `Signer<'info>` (or its signature is proven by a PDA `seeds` constraint)."
       ],
       "cwe": "CWE-863",
       "tags": [
@@ -1528,8 +1534,8 @@
       },
       "skill": "skills/solana-account-validation/SKILL.md",
       "skill_checklist": [
-        "SPL accounts assert `owner == token_program`, the right `mint`, and the expected authority",
-        "Every account that authorises a privileged action is typed `Signer<'info>` (or its"
+        "Accounts that must belong to the program are `Account<'info, T>` — never `UncheckedAccount` or raw `AccountInfo` — so Anchor checks owner and discriminator.",
+        "Every account that authorises a privileged action is typed `Signer<'info>` (or its signature is proven by a PDA `seeds` constraint)."
       ],
       "cwe": "CWE-863",
       "tags": [
@@ -1579,7 +1585,7 @@
       },
       "skill": "skills/delegatecall-proxy/SKILL.md",
       "skill_checklist": [
-        "Writes to logic pointers are guarded by an admin role **and** a timelock/delay, and emit an"
+        "Writes to logic pointers are guarded by an admin role **and** a timelock/delay, and emit an `Upgraded` event."
       ],
       "cwe": "CWE-471",
       "tags": [
@@ -1627,7 +1633,7 @@
       },
       "skill": "skills/signature-replay/SKILL.md",
       "skill_checklist": [
-        "The digest commits to the verifying context: EIP-712 domain separator with `name`,"
+        "The digest commits to the verifying context: EIP-712 domain separator with `name`, `version`, `chainId`, `verifyingContract`."
       ],
       "cwe": "CWE-294",
       "tags": [
@@ -1678,7 +1684,7 @@
       },
       "skill": "skills/fund-recovery/SKILL.md",
       "skill_checklist": [
-        "Token recovery uses `SafeERC20` and checks the return data - a rescue that silently fails is"
+        "Every authorisation variable is actually assigned somewhere: a `require(msg.sender == X)` where `X` is never written is dead code, and dead recovery code means permanently stranded funds."
       ],
       "cwe": "CWE-284",
       "tags": [
@@ -1726,7 +1732,7 @@
       },
       "skill": "skills/access-control/SKILL.md",
       "skill_checklist": [
-        "Each privileged function has either a modifier (`onlyOwner`, `onlyRole`, `onlyAdmin`)",
+        "Each privileged function has either a modifier (`onlyOwner`, `onlyRole`, `onlyAdmin`) or an explicit first-statement `require(msg.sender == ...)`.",
         "Build the list of externally callable functions and mark which ones mutate privileged state."
       ],
       "cwe": "CWE-284",
@@ -1776,7 +1782,8 @@
       },
       "skill": "skills/solana-cpi/SKILL.md",
       "skill_checklist": [
-        "Every CPI result is propagated (`?`) or explicitly handled; a dropped `Result` means the"
+        "Writable accounts handed to the callee are ones the program owns; unowned writable accounts trigger `OwnerChanged`/`MissingAccount` failures which must be surfaced, not swallowed.",
+        "Every CPI result is propagated (`?`) or explicitly handled; a dropped `Result` means the handler reports success for an operation that never happened."
       ],
       "cwe": "CWE-252",
       "tags": [
@@ -1826,7 +1833,8 @@
       },
       "skill": "skills/solana-math/SKILL.md",
       "skill_checklist": [
-        "Divisors can never be zero: the empty-vault case is special-cased or guarded with"
+        "Divisors can never be zero: the empty-vault case is special-cased or guarded with `require!(x > 0)`.",
+        "Arithmetic uses `checked_add`/`checked_sub`/`checked_mul`/`checked_div` or `Saturating`; if the workspace sets `overflow-checks = false`, silent wrapping is a fund-integrity bug rather than a panic."
       ],
       "cwe": "CWE-682",
       "tags": [
@@ -1925,7 +1933,8 @@
       },
       "skill": "skills/solana-account-validation/SKILL.md",
       "skill_checklist": [
-        "PDAs are derived, not trusted: `seeds` + `bump` verified by Anchor, or"
+        "Every account that authorises a privileged action is typed `Signer<'info>` (or its signature is proven by a PDA `seeds` constraint).",
+        "PDAs are derived, not trusted: `seeds` + `bump` verified by Anchor, or `find_program_address`/`create_program_address` in code. A `bump` arriving from instruction data is a validation gap."
       ],
       "cwe": "CWE-863",
       "tags": [
@@ -1972,7 +1981,8 @@
       },
       "skill": "skills/solana-account-validation/SKILL.md",
       "skill_checklist": [
-        "PDAs are derived, not trusted: `seeds` + `bump` verified by Anchor, or"
+        "Every account that authorises a privileged action is typed `Signer<'info>` (or its signature is proven by a PDA `seeds` constraint).",
+        "PDAs are derived, not trusted: `seeds` + `bump` verified by Anchor, or `find_program_address`/`create_program_address` in code. A `bump` arriving from instruction data is a validation gap."
       ],
       "cwe": "CWE-863",
       "tags": [
@@ -2022,8 +2032,9 @@
       },
       "skill": "skills/solana-account-validation/SKILL.md",
       "skill_checklist": [
-        "PDAs are derived, not trusted: `seeds` + `bump` verified by Anchor, or",
-        "SPL accounts assert `owner == token_program`, the right `mint`, and the expected authority"
+        "Every account that authorises a privileged action is typed `Signer<'info>` (or its signature is proven by a PDA `seeds` constraint).",
+        "SPL accounts assert `owner == token_program`, the right `mint`, and the expected authority (`#[account(token::mint = ..., token::authority = ...)]`).",
+        "PDAs are derived, not trusted: `seeds` + `bump` verified by Anchor, or `find_program_address`/`create_program_address` in code. A `bump` arriving from instruction data is a validation gap."
       ],
       "cwe": "CWE-269",
       "tags": [
@@ -2120,7 +2131,7 @@
       },
       "skill": "skills/fund-recovery/SKILL.md",
       "skill_checklist": [
-        "Token recovery uses `SafeERC20` and checks the return data - a rescue that silently fails is"
+        "Token recovery uses `SafeERC20` and checks the return data — a rescue that silently fails is worse than no rescue."
       ],
       "cwe": "CWE-284",
       "tags": [
@@ -2167,8 +2178,8 @@
       },
       "skill": "skills/solana-account-validation/SKILL.md",
       "skill_checklist": [
-        "SPL accounts assert `owner == token_program`, the right `mint`, and the expected authority",
-        "Every account that authorises a privileged action is typed `Signer<'info>` (or its"
+        "SPL accounts assert `owner == token_program`, the right `mint`, and the expected authority (`#[account(token::mint = ..., token::authority = ...)]`).",
+        "Every account that authorises a privileged action is typed `Signer<'info>` (or its signature is proven by a PDA `seeds` constraint)."
       ],
       "cwe": "CWE-269",
       "tags": [
@@ -2220,8 +2231,8 @@
       },
       "skill": "skills/oracle-price/SKILL.md",
       "skill_checklist": [
-        "A second, independent source or a max-deviation circuit breaker exists for anything that",
-        "Units/exponents are asserted (1e8 Chainlink vs 1e18 pool decimals vs HyperCore asset"
+        "A second, independent source or a max-deviation circuit breaker exists for anything that moves value.",
+        "Units and exponents are asserted (1e8 Chainlink vs 1e18 pool decimals vs HyperCore asset exponent) before values are combined."
       ],
       "cwe": "CWE-1231",
       "tags": [
@@ -2268,7 +2279,7 @@
       },
       "skill": "skills/solana-math/SKILL.md",
       "skill_checklist": [
-        "Arithmetic uses `checked_add/sub/mul/div` or `Saturating`. If the workspace sets",
+        "Arithmetic uses `checked_add`/`checked_sub`/`checked_mul`/`checked_div` or `Saturating`; if the workspace sets `overflow-checks = false`, silent wrapping is a fund-integrity bug rather than a panic.",
         "Intermediates are widened (`u128`) and narrowed only at the end, after bounds checks."
       ],
       "cwe": "CWE-682",
@@ -2320,7 +2331,7 @@
       },
       "skill": "skills/solana-math/SKILL.md",
       "skill_checklist": [
-        "Arithmetic uses `checked_add/sub/mul/div` or `Saturating`. If the workspace sets",
+        "Arithmetic uses `checked_add`/`checked_sub`/`checked_mul`/`checked_div` or `Saturating`; if the workspace sets `overflow-checks = false`, silent wrapping is a fund-integrity bug rather than a panic.",
         "Intermediates are widened (`u128`) and narrowed only at the end, after bounds checks."
       ],
       "cwe": "CWE-682",
@@ -2371,7 +2382,7 @@
       },
       "skill": "skills/signature-replay/SKILL.md",
       "skill_checklist": [
-        "Malleability is handled by a library (`ECDSA.recover`/`tryRecover`, enforced low-s,"
+        "Malleability is handled by a library (`ECDSA.recover`/`tryRecover`, enforced low-s, `v in {27,28}`) rather than raw `ecrecover`."
       ],
       "cwe": "CWE-294",
       "tags": [
@@ -2422,7 +2433,8 @@
       },
       "skill": "skills/solana-account-validation/SKILL.md",
       "skill_checklist": [
-        "SPL accounts assert `owner == token_program`, the right `mint`, and the expected authority"
+        "Owner-writable fields (`data`, `lamports`) are mutated only through typed accounts, and `realloc` rent payers are funded signers.",
+        "SPL accounts assert `owner == token_program`, the right `mint`, and the expected authority (`#[account(token::mint = ..., token::authority = ...)]`)."
       ],
       "cwe": "CWE-269",
       "tags": [
@@ -2471,8 +2483,7 @@
       },
       "skill": "skills/solana-math/SKILL.md",
       "skill_checklist": [
-        "`as` casts are reviewed for truncation (`u128 as u64`, `i64 as u64`).",
-        "Multiplication happens **before** division; division-first expressions are precision-loss"
+        "`as` casts are reviewed for truncation (`u128 as u64`, `i64 as u64`)."
       ],
       "cwe": "CWE-682",
       "tags": [
@@ -2522,7 +2533,7 @@
       },
       "skill": "skills/external-calls/SKILL.md",
       "skill_checklist": [
-        "The 2300-gas stipend of `send`/`transfer` is acceptable for every plausible recipient"
+        "The 2300-gas stipend of `send`/`transfer` is acceptable for every plausible recipient (contracts, multisigs, AA wallets); otherwise use pull payments."
       ],
       "cwe": "CWE-252",
       "tags": [
@@ -2548,68 +2559,68 @@
         "agent": "evm-hunter#1",
         "files_scanned": 1,
         "findings": 0,
-        "duration_ms": 214,
+        "duration_ms": 101,
         "log": [
           "evm-hunter#1: 1 file(s), 7 detector(s) [evm_access, evm_delegatecall, evm_external_calls, evm_oracle, evm_reentrancy, evm_selfdestruct, evm_sig_replay]",
-          "evm-hunter#1: done, 0 finding(s) in 214 ms"
+          "evm-hunter#1: done, 0 finding(s) in 101 ms"
         ]
       },
       {
         "agent": "solana-hunter#1",
         "files_scanned": 1,
         "findings": 0,
-        "duration_ms": 21,
+        "duration_ms": 14,
         "log": [
           "solana-hunter#1: 1 file(s), 6 detector(s) [solana_accounts, solana_authority, solana_cpi, solana_deser, solana_math, solana_signer]",
-          "solana-hunter#1: done, 0 finding(s) in 21 ms"
-        ]
-      },
-      {
-        "agent": "evm-hunter#2",
-        "files_scanned": 1,
-        "findings": 10,
-        "duration_ms": 513,
-        "log": [
-          "evm-hunter#2: 1 file(s), 7 detector(s) [evm_access, evm_delegatecall, evm_external_calls, evm_oracle, evm_reentrancy, evm_selfdestruct, evm_sig_replay]",
-          "  evm_access             solidity/Vault.sol -> 4 finding(s) (303 ms)",
-          "  evm_external_calls     solidity/Vault.sol -> 1 finding(s) (186 ms)",
-          "  evm_oracle             solidity/Vault.sol -> 2 finding(s) (7 ms)",
-          "  evm_reentrancy         solidity/Vault.sol -> 2 finding(s) (6 ms)",
-          "  evm_selfdestruct       solidity/Vault.sol -> 1 finding(s) (4 ms)",
-          "evm-hunter#2: done, 10 finding(s) in 513 ms"
+          "solana-hunter#1: done, 0 finding(s) in 14 ms"
         ]
       },
       {
         "agent": "evm-hunter#3",
         "files_scanned": 1,
         "findings": 14,
-        "duration_ms": 437,
+        "duration_ms": 203,
         "log": [
           "evm-hunter#3: 1 file(s), 7 detector(s) [evm_access, evm_delegatecall, evm_external_calls, evm_oracle, evm_reentrancy, evm_selfdestruct, evm_sig_replay]",
-          "  evm_access             solidity/HyperVault.sol -> 1 finding(s) (73 ms)",
-          "  evm_delegatecall       solidity/HyperVault.sol -> 2 finding(s) (4 ms)",
-          "  evm_external_calls     solidity/HyperVault.sol -> 2 finding(s) (316 ms)",
-          "  evm_oracle             solidity/HyperVault.sol -> 1 finding(s) (20 ms)",
+          "  evm_access             solidity/HyperVault.sol -> 1 finding(s) (35 ms)",
+          "  evm_delegatecall       solidity/HyperVault.sol -> 2 finding(s) (1 ms)",
+          "  evm_external_calls     solidity/HyperVault.sol -> 2 finding(s) (94 ms)",
+          "  evm_oracle             solidity/HyperVault.sol -> 1 finding(s) (0 ms)",
           "  evm_reentrancy         solidity/HyperVault.sol -> 1 finding(s) (5 ms)",
-          "  evm_selfdestruct       solidity/HyperVault.sol -> 3 finding(s) (6 ms)",
-          "  evm_sig_replay         solidity/HyperVault.sol -> 4 finding(s) (11 ms)",
-          "evm-hunter#3: done, 14 finding(s) in 437 ms"
+          "  evm_selfdestruct       solidity/HyperVault.sol -> 3 finding(s) (64 ms)",
+          "  evm_sig_replay         solidity/HyperVault.sol -> 4 finding(s) (0 ms)",
+          "evm-hunter#3: done, 14 finding(s) in 203 ms"
         ]
       },
       {
         "agent": "solana-hunter#2",
         "files_scanned": 1,
         "findings": 25,
-        "duration_ms": 397,
+        "duration_ms": 182,
         "log": [
           "solana-hunter#2: 1 file(s), 6 detector(s) [solana_accounts, solana_authority, solana_cpi, solana_deser, solana_math, solana_signer]",
-          "  solana_accounts        solana/vault/programs/vault/src/lib.rs -> 6 finding(s) (357 ms)",
-          "  solana_authority       solana/vault/programs/vault/src/lib.rs -> 3 finding(s) (10 ms)",
-          "  solana_cpi             solana/vault/programs/vault/src/lib.rs -> 4 finding(s) (8 ms)",
-          "  solana_deser           solana/vault/programs/vault/src/lib.rs -> 1 finding(s) (3 ms)",
-          "  solana_math            solana/vault/programs/vault/src/lib.rs -> 5 finding(s) (12 ms)",
-          "  solana_signer          solana/vault/programs/vault/src/lib.rs -> 6 finding(s) (3 ms)",
-          "solana-hunter#2: done, 25 finding(s) in 397 ms"
+          "  solana_accounts        solana/vault/programs/vault/src/lib.rs -> 6 finding(s) (107 ms)",
+          "  solana_authority       solana/vault/programs/vault/src/lib.rs -> 3 finding(s) (0 ms)",
+          "  solana_cpi             solana/vault/programs/vault/src/lib.rs -> 4 finding(s) (1 ms)",
+          "  solana_deser           solana/vault/programs/vault/src/lib.rs -> 1 finding(s) (1 ms)",
+          "  solana_math            solana/vault/programs/vault/src/lib.rs -> 5 finding(s) (69 ms)",
+          "  solana_signer          solana/vault/programs/vault/src/lib.rs -> 6 finding(s) (1 ms)",
+          "solana-hunter#2: done, 25 finding(s) in 182 ms"
+        ]
+      },
+      {
+        "agent": "evm-hunter#2",
+        "files_scanned": 1,
+        "findings": 10,
+        "duration_ms": 256,
+        "log": [
+          "evm-hunter#2: 1 file(s), 7 detector(s) [evm_access, evm_delegatecall, evm_external_calls, evm_oracle, evm_reentrancy, evm_selfdestruct, evm_sig_replay]",
+          "  evm_access             solidity/Vault.sol -> 4 finding(s) (173 ms)",
+          "  evm_external_calls     solidity/Vault.sol -> 1 finding(s) (78 ms)",
+          "  evm_oracle             solidity/Vault.sol -> 2 finding(s) (0 ms)",
+          "  evm_reentrancy         solidity/Vault.sol -> 2 finding(s) (0 ms)",
+          "  evm_selfdestruct       solidity/Vault.sol -> 1 finding(s) (1 ms)",
+          "evm-hunter#2: done, 10 finding(s) in 256 ms"
         ]
       },
       {
@@ -2857,68 +2868,68 @@
       "agent": "evm-hunter#1",
       "files_scanned": 1,
       "findings": 0,
-      "duration_ms": 214,
+      "duration_ms": 101,
       "log": [
         "evm-hunter#1: 1 file(s), 7 detector(s) [evm_access, evm_delegatecall, evm_external_calls, evm_oracle, evm_reentrancy, evm_selfdestruct, evm_sig_replay]",
-        "evm-hunter#1: done, 0 finding(s) in 214 ms"
+        "evm-hunter#1: done, 0 finding(s) in 101 ms"
       ]
     },
     {
       "agent": "solana-hunter#1",
       "files_scanned": 1,
       "findings": 0,
-      "duration_ms": 21,
+      "duration_ms": 14,
       "log": [
         "solana-hunter#1: 1 file(s), 6 detector(s) [solana_accounts, solana_authority, solana_cpi, solana_deser, solana_math, solana_signer]",
-        "solana-hunter#1: done, 0 finding(s) in 21 ms"
-      ]
-    },
-    {
-      "agent": "evm-hunter#2",
-      "files_scanned": 1,
-      "findings": 10,
-      "duration_ms": 513,
-      "log": [
-        "evm-hunter#2: 1 file(s), 7 detector(s) [evm_access, evm_delegatecall, evm_external_calls, evm_oracle, evm_reentrancy, evm_selfdestruct, evm_sig_replay]",
-        "  evm_access             solidity/Vault.sol -> 4 finding(s) (303 ms)",
-        "  evm_external_calls     solidity/Vault.sol -> 1 finding(s) (186 ms)",
-        "  evm_oracle             solidity/Vault.sol -> 2 finding(s) (7 ms)",
-        "  evm_reentrancy         solidity/Vault.sol -> 2 finding(s) (6 ms)",
-        "  evm_selfdestruct       solidity/Vault.sol -> 1 finding(s) (4 ms)",
-        "evm-hunter#2: done, 10 finding(s) in 513 ms"
+        "solana-hunter#1: done, 0 finding(s) in 14 ms"
       ]
     },
     {
       "agent": "evm-hunter#3",
       "files_scanned": 1,
       "findings": 14,
-      "duration_ms": 437,
+      "duration_ms": 203,
       "log": [
         "evm-hunter#3: 1 file(s), 7 detector(s) [evm_access, evm_delegatecall, evm_external_calls, evm_oracle, evm_reentrancy, evm_selfdestruct, evm_sig_replay]",
-        "  evm_access             solidity/HyperVault.sol -> 1 finding(s) (73 ms)",
-        "  evm_delegatecall       solidity/HyperVault.sol -> 2 finding(s) (4 ms)",
-        "  evm_external_calls     solidity/HyperVault.sol -> 2 finding(s) (316 ms)",
-        "  evm_oracle             solidity/HyperVault.sol -> 1 finding(s) (20 ms)",
+        "  evm_access             solidity/HyperVault.sol -> 1 finding(s) (35 ms)",
+        "  evm_delegatecall       solidity/HyperVault.sol -> 2 finding(s) (1 ms)",
+        "  evm_external_calls     solidity/HyperVault.sol -> 2 finding(s) (94 ms)",
+        "  evm_oracle             solidity/HyperVault.sol -> 1 finding(s) (0 ms)",
         "  evm_reentrancy         solidity/HyperVault.sol -> 1 finding(s) (5 ms)",
-        "  evm_selfdestruct       solidity/HyperVault.sol -> 3 finding(s) (6 ms)",
-        "  evm_sig_replay         solidity/HyperVault.sol -> 4 finding(s) (11 ms)",
-        "evm-hunter#3: done, 14 finding(s) in 437 ms"
+        "  evm_selfdestruct       solidity/HyperVault.sol -> 3 finding(s) (64 ms)",
+        "  evm_sig_replay         solidity/HyperVault.sol -> 4 finding(s) (0 ms)",
+        "evm-hunter#3: done, 14 finding(s) in 203 ms"
       ]
     },
     {
       "agent": "solana-hunter#2",
       "files_scanned": 1,
       "findings": 25,
-      "duration_ms": 397,
+      "duration_ms": 182,
       "log": [
         "solana-hunter#2: 1 file(s), 6 detector(s) [solana_accounts, solana_authority, solana_cpi, solana_deser, solana_math, solana_signer]",
-        "  solana_accounts        solana/vault/programs/vault/src/lib.rs -> 6 finding(s) (357 ms)",
-        "  solana_authority       solana/vault/programs/vault/src/lib.rs -> 3 finding(s) (10 ms)",
-        "  solana_cpi             solana/vault/programs/vault/src/lib.rs -> 4 finding(s) (8 ms)",
-        "  solana_deser           solana/vault/programs/vault/src/lib.rs -> 1 finding(s) (3 ms)",
-        "  solana_math            solana/vault/programs/vault/src/lib.rs -> 5 finding(s) (12 ms)",
-        "  solana_signer          solana/vault/programs/vault/src/lib.rs -> 6 finding(s) (3 ms)",
-        "solana-hunter#2: done, 25 finding(s) in 397 ms"
+        "  solana_accounts        solana/vault/programs/vault/src/lib.rs -> 6 finding(s) (107 ms)",
+        "  solana_authority       solana/vault/programs/vault/src/lib.rs -> 3 finding(s) (0 ms)",
+        "  solana_cpi             solana/vault/programs/vault/src/lib.rs -> 4 finding(s) (1 ms)",
+        "  solana_deser           solana/vault/programs/vault/src/lib.rs -> 1 finding(s) (1 ms)",
+        "  solana_math            solana/vault/programs/vault/src/lib.rs -> 5 finding(s) (69 ms)",
+        "  solana_signer          solana/vault/programs/vault/src/lib.rs -> 6 finding(s) (1 ms)",
+        "solana-hunter#2: done, 25 finding(s) in 182 ms"
+      ]
+    },
+    {
+      "agent": "evm-hunter#2",
+      "files_scanned": 1,
+      "findings": 10,
+      "duration_ms": 256,
+      "log": [
+        "evm-hunter#2: 1 file(s), 7 detector(s) [evm_access, evm_delegatecall, evm_external_calls, evm_oracle, evm_reentrancy, evm_selfdestruct, evm_sig_replay]",
+        "  evm_access             solidity/Vault.sol -> 4 finding(s) (173 ms)",
+        "  evm_external_calls     solidity/Vault.sol -> 1 finding(s) (78 ms)",
+        "  evm_oracle             solidity/Vault.sol -> 2 finding(s) (0 ms)",
+        "  evm_reentrancy         solidity/Vault.sol -> 2 finding(s) (0 ms)",
+        "  evm_selfdestruct       solidity/Vault.sol -> 1 finding(s) (1 ms)",
+        "evm-hunter#2: done, 10 finding(s) in 256 ms"
       ]
     },
     {

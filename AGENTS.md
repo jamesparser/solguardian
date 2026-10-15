@@ -104,6 +104,8 @@ python3 -m solguardian list                                    # agents + detect
 python3 -m solguardian analyze samples --fail-on critical; echo $?   # CI gate -> 1
 
 python3 -m unittest discover -s tests -v                       # full suite
+python3 -m unittest tests.test_solguardian.TestGroundTruth     # single test class
+python3 -m unittest tests.test_solguardian.TestGroundTruth.test_all_seeded_issues_caught  # single test
 python3 tools/recall_gate.py                                   # CI: recall + precision + perf
 python3 tools/scale_check.py --files 24                         # serial == threads == processes
 pip install -e .                                               # gives you `solguardian`
